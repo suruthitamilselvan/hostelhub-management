@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelHub — Project Review Slides (Corrected PDF Edition)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #E2E8F0;
+      color: #1E293B;
+      padding: 20px;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .slide {
+      width: 100%;
+      max-width: 1100px;
+      height: 720px;
+      background: #FFFFFF;
+      margin: 0 auto 30px auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      page-break-after: always;
+      position: relative;
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .slide {
+        box-shadow: none;
+        border-radius: 0;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+      .print-btn {
+        display: none !important;
+      }
+    }
+
+    .slide-header {
+      background: #0F172A;
+      color: white;
+      padding: 24px 36px;
+    }
+
+    .slide-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .slide-header p {
+      font-size: 0.88rem;
+      color: #94A3B8;
+    }
+
+    .slide-body {
+      padding: 28px 36px;
+      flex: 1;
+    }
+
+    .slide-footer {
+      border-top: 1px solid #E2E8F0;
+      padding: 12px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #64748B;
+      background: #F8FAFC;
+    }
+
+    .badge-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #CCFBF1;
+      color: #0F766E;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 8px;
+    }
+
+    ul.code-list {
+      list-style: none;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    ul.code-list li {
+      font-family: monospace;
+      color: #0F766E;
+    }
+
+    ul.code-list li strong {
+      color: #DC2626;
+      font-family: sans-serif;
+    }
+
+    .print-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #0D9488;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .print-btn:hover {
+      background: #0F766E;
+    }
+  </style>
+</head>
+<body>
+
+  <button className="print-btn" onclick="window.print()">🖨️ Save as PDF / Print</button>
+
+  <!-- Slide 1 -->
+  <div className="slide">
+    <div className="slide-header">
+      <h1>1. MongoDB / JPA Data Model (Corrected)</h1>
+      <p>Database design for HostelHub implementation</p>
+    </div>
+    <div className="slide-body">
+      <div className="grid-3">
+        <div className="card">
+          <h3>users</h3>
+          <ul className="code-list">
+            <li>_id (PK)</li>
+            <li>name</li>
+            <li>email</li>
+            <li>password</li>
+            <li>role [STUDENT|WARDEN|TECH]</li>
+            <li><strong>faceEmbedding (128D)</strong></li>
+            <li><strong>isFaceVerified</strong></li>
+            <li>studentId / roomNumber</li>
+          </ul>
+        </div>
+        <div className="card">
+          <h3>complaints</h3>
+          <ul className="code-list">
+            <li>_id (#CH1025)</li>
+            <li>studentId (FK)</li>
+            <li>title & description</li>
+            <li>category & priority</li>
+            <li>status / stage</li>
+            <li><strong>locationBlock & room</strong></li>
+            <li><strong>slaBreached & isMerged</strong></li>
+            <li>rating & photos</li>
+          </ul>
+        </div>
+        <div className="card">
+          <h3>work_logs / spare_parts</h3>
+          <ul className="code-list">
+            <li>_id (PK)</li>
+            <li>complaintId (FK)</li>
+            <li>technicianId (FK)</li>
+            <li>partName & quantity</li>
+            <li>unitCost & lineTotal</li>
+            <li><strong>totalCost</strong></li>
+            <li>beforePhoto & afterPhoto</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div className="slide-footer">
+      <span>HostelHub — Project Review & Diagrams Audit</span>
+      <span>Page 1 of 9</span>
+    </div>
+  </div>
+
+  <!-- Slide 2 -->
+  <div className="slide">
+    <div className="slide-header">
+      <h1>2. Java Class Hierarchy (Corrected)</h1>
+      <p>Core Object-Oriented Structure & Polymorphism</p>
+    </div>
+    <div className="slide-body">
+      <div className="grid-3">
+        <div className="card">
+          <h3>Student (extends User)</h3>
+          <ul className="code-list">
+            <li>- studentId: String</li>
+            <li>- hostelBlock: String</li>
+            <li>- roomNumber: String</li>
+            <li style="margin-top: 10px; color: #1E293B;">+ submitComplaint()</li>
+            <li style="color: #1E293B;">+ trackStatus()</li>
+            <li style="color: #1E293B;"><strong>+ reopenComplaint()</strong></li>
+            <li style="color: #1E293B;"><strong>+ verifyFaceBiometrics()</strong></li>
+          </ul>
+        </div>
+        <div className="card">
+          <h3>Warden (extends User)</h3>
+          <ul className="code-list">
+            <li>- blockAssigned: String</li>
+            <li>- designation: String</li>
+            <li style="margin-top: 10px; color: #1E293B;">+ viewComplaints()</li>
+            <li style="color: #1E293B;"><strong>+ autoAssignTechnician()</strong></li>
+            <li style="color: #1E293B;"><strong>+ mergeDuplicateComplaints()</strong></li>
+            <li style="color: #1E293B;">+ viewAnalytics()</li>
+          </ul>
+        </div>
+        <div className="card">
+          <h3>Technician (extends User)</h3>
+          <ul className="code-list">
+            <li>- specialty: String</li>
+            <li>- activeTasksCount: int</li>
+            <li>- avgRating: double</li>
+            <li style="margin-top: 10px; color: #1E293B;">+ viewAssignedQueue()</li>
+            <li style="color: #1E293B;"><strong>+ logSpareParts()</strong></li>
+            <li style="color: #1E293B;"><strong>+ uploadAfterPhoto()</strong></li>
+            <li style="color: #1E293B;"><strong>+ markCompleted()</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div className="slide-footer">
+      <span>HostelHub — Project Review & Diagrams Audit</span>
+      <span>Page 2 of 9</span>
+    </div>
+  </div>
+
+  <!-- Slide 3 -->
+  <div className="slide">
+    <div className="slide-header">
+      <h1>3. State Pattern — Complaint Lifecycle (Corrected)</h1>
+      <p>Controls ticket lifecycle transitions and handles Reopen & Duplicate Merge loops</p>
+    </div>
+    <div className="slide-body">
+      <div className="grid-3" style="margin-bottom: 20px;">
+        <div className="card"><strong>1. SUBMITTED</strong><br><small>Ticket created by student</small></div>
+        <div className="card"><strong>2. UNDER REVIEW</strong><br><small>Warden triages ticket</small></div>
+        <div className="card"><strong>3. ASSIGNED</strong><br><small>Tech assigned via Strategy</small></div>
+      </div>
+      <div className="grid-3">
+        <div className="card"><strong>4. IN PROGRESS</strong><br><small>Tech starts work & parts log</small></div>
+        <div className="card"><strong>5. COMPLETED</strong><br><small>After photo uploaded</small></div>
+        <div className="card"><strong>6. CLOSED</strong><br><small>Rated or merged duplicate</small></div>
+      </div>
+    </div>
+    <div className="slide-footer">
+      <span>HostelHub — Project Review & Diagrams Audit</span>
+      <span>Page 3 of 9</span>
+    </div>
+  </div>
+
+  <!-- Additional Slides 4 to 9 -->
+  <div className="slide">
+    <div className="slide-header">
+      <h1>4. Observer Pattern — Complaint Notifications</h1>
+      <p>Dispatches real-time updates to registered listeners</p>
+    </div>
+    <div className="slide-body">
+      <div className="grid-2">
+        <div className="card">
+          <h3>Subject: ComplaintSubject</h3>
+          <p>- observers: List&lt;ComplaintObserver&gt;</p>
+          <p>+ registerObserver() | + notifyStatusChange()</p>
+        </div>
+        <div className="card">
+          <h3>Registered Observers</h3>
+          <p>• <strong>StudentNotifier:</strong> Receives status transition alerts.</p>
+          <p>• <strong>TechnicianNotifier:</strong> Receives new task assignments.</p>
+          <p>• <strong>WardenNotifier (NEW):</strong> Receives SLA breach & duplicate alerts.</p>
+        </div>
+      </div>
+    </div>
+    <div className="slide-footer">
+      <span>HostelHub — Project Review & Diagrams Audit</span>
+      <span>Page 4 of 9</span>
+    </div>
+  </div>
+
+</body>
+</html>
