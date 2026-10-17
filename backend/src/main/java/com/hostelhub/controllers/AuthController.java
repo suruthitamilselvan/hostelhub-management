@@ -96,6 +96,26 @@ public class AuthController {
         return ResponseEntity.ok(resp);
     }
 
+    @PostMapping("/reset-face/{userId}")
+    public ResponseEntity<?> resetFace(@PathVariable Long userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("message", "User not found with id: " + userId));
+        }
+
+        User user = userOpt.get();
+        user.setFaceEmbedding(null);
+        user.setFacePhoto(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Face biometric profile removed from MySQL database.",
+            "userId", user.getId(),
+            "hasFaceEnrolled", false
+        ));
+    }
+
     @PostMapping("/verify-face")
     public ResponseEntity<?> verifyFace(@RequestBody FaceVerificationRequest req) {
         boolean isGeofenceValid = geofenceService.isWithinHostelNetwork(req.getIpAddress());
@@ -113,6 +133,21 @@ public class AuthController {
             }
         }
 
+        // STRICT CHECK 1: If no face is enrolled in MySQL for this user, REJECT!
+        boolean hasStored = storedEmbedding != null && !storedEmbedding.isBlank();
+        if (!hasStored) {
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("faceVerified", false);
+            resp.put("geofenceValid", isGeofenceValid);
+            resp.put("overallVerified", false);
+            resp.put("embeddingScore", 0.0);
+            resp.put("hasStoredProfile", false);
+            resp.put("userName", userName);
+            resp.put("message", "No biometric face profile registered in MySQL for this resident. Please register your face first.");
+            return ResponseEntity.ok(resp);
+        }
+
+        // STRICT CHECK 2: Calculate actual cosine similarity between stored MySQL vector and live camera vector
         boolean isFaceVerified = faceVerificationService.verifyFaceEmbedding(storedEmbedding, req.getIncomingEmbedding());
         double score = faceVerificationService.calculateSimilarity(storedEmbedding, req.getIncomingEmbedding());
 
@@ -123,8 +158,9 @@ public class AuthController {
         resp.put("embeddingScore", Math.round(score * 1000.0) / 1000.0);
         resp.put("ipAddress", req.getIpAddress() != null ? req.getIpAddress() : "192.168.1.42 (Hostel Wi-Fi)");
         resp.put("userName", userName);
-        resp.put("hasStoredProfile", storedEmbedding != null && !storedEmbedding.isBlank());
+        resp.put("hasStoredProfile", true);
         resp.put("facePhoto", facePhoto);
+        resp.put("message", isFaceVerified ? "Identity verified successfully!" : "Face did not match registered profile in MySQL.");
 
         return ResponseEntity.ok(resp);
     }

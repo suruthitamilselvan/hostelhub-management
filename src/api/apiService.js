@@ -40,6 +40,10 @@ export const apiService = {
 
   getFaceStatus: (userId) => fetchApi(`/auth/face-status/${userId}`),
 
+  resetFace: (userId) => fetchApi(`/auth/reset-face/${userId}`, {
+    method: 'POST'
+  }),
+
   verifyFace: (userId, incomingEmbedding, ipAddress) => fetchApi('/auth/verify-face', {
     method: 'POST',
     body: JSON.stringify({ userId, incomingEmbedding, ipAddress })
