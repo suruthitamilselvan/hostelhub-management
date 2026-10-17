@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export default function TechnicianModule({
   activeTab,
@@ -13,6 +13,20 @@ export default function TechnicianModule({
   const [newQty, setNewQty] = useState(1);
   const [newUnitCost, setNewUnitCost] = useState('');
   const [techNotes, setTechNotes] = useState('Replaced damaged rubber washer and tightened valve packing seal.');
+
+  const techFileInputRef = useRef(null);
+  const techCameraInputRef = useRef(null);
+
+  const handleAfterPhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        onUploadAfterPhoto(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddPartSubmit = (e) => {
     e.preventDefault();
@@ -173,27 +187,93 @@ export default function TechnicianModule({
           </div>
 
           {/* Photo Comparison Grid */}
-          <div className="photo-compare-grid" style={{ marginBottom: '1.5rem' }}>
-            <div className="photo-slot">
-              <div className="photo-slot-label">BEFORE REPAIR PHOTO</div>
-              <div className="file-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                {currentTask.beforePhoto || 'before-tap.jpg'}
-              </div>
+          <div className="photo-compare-grid" style={{ marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="photo-slot" style={{ background: '#F8FAFC', padding: '1rem', border: '1px solid #CBD5E1', borderRadius: '6px' }}>
+              <div className="photo-slot-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', marginBottom: '8px' }}>BEFORE REPAIR EVIDENCE</div>
+              {currentTask.beforePhoto && currentTask.beforePhoto.startsWith('data:image') ? (
+                <img
+                  src={currentTask.beforePhoto}
+                  alt="Before Repair"
+                  style={{ width: '100%', maxHeight: '140px', objectFit: 'contain', borderRadius: '4px', border: '1px solid #E2E8F0' }}
+                />
+              ) : (
+                <div className="file-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  {currentTask.beforePhoto || 'before-tap.jpg'}
+                </div>
+              )}
             </div>
 
-            <div className="photo-slot">
-              <div className="photo-slot-label">AFTER REPAIR PHOTO</div>
+            <div className="photo-slot" style={{ background: '#F8FAFC', padding: '1rem', border: '1px solid #CBD5E1', borderRadius: '6px' }}>
+              <div className="photo-slot-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', marginBottom: '8px' }}>AFTER REPAIR PROOF (LIVE CAMERA)</div>
+              
+              <input
+                type="file"
+                ref={techFileInputRef}
+                accept="image/*"
+                onChange={handleAfterPhotoSelect}
+                style={{ display: 'none' }}
+              />
+              <input
+                type="file"
+                ref={techCameraInputRef}
+                accept="image/*"
+                capture="environment"
+                onChange={handleAfterPhotoSelect}
+                style={{ display: 'none' }}
+              />
+
               {currentTask.afterPhoto ? (
-                <div className="file-badge" style={{ borderColor: '#10B981', color: '#047857', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  {currentTask.afterPhoto}
+                <div>
+                  {currentTask.afterPhoto.startsWith('data:image') ? (
+                    <img
+                      src={currentTask.afterPhoto}
+                      alt="After Repair Proof"
+                      style={{ width: '100%', maxHeight: '140px', objectFit: 'contain', borderRadius: '4px', border: '2px solid #10B981', marginBottom: '8px' }}
+                    />
+                  ) : (
+                    <div className="file-badge" style={{ borderColor: '#10B981', color: '#047857', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      {currentTask.afterPhoto}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" className="btn-action" onClick={() => techCameraInputRef.current?.click()} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>
+                      Retake Photo
+                    </button>
+                    <button type="button" className="btn-action" onClick={() => techFileInputRef.current?.click()} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>
+                      Change File
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <button type="button" className="btn-action" onClick={() => onUploadAfterPhoto('after-tap.jpg')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Upload After Repair Photo
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn-action"
+                    onClick={() => techCameraInputRef.current?.click()}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    Snap Repair Photo (Camera)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action"
+                    onClick={() => techFileInputRef.current?.click()}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Upload File
+                  </button>
+                </div>
               )}
             </div>
           </div>

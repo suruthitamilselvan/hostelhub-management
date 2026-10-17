@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export default function StudentModule({
   activeTab,
@@ -16,7 +16,23 @@ export default function StudentModule({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [photoName, setPhotoName] = useState('');
+  const [photoPreview, setPhotoPreview] = useState('');
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
+
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoName(file.name);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // My Complaints Filters & Pagination
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,13 +61,14 @@ export default function StudentModule({
       description: description || 'Routine maintenance repair requested.',
       locationBlock: block,
       locationRoom: room,
-      photoName
+      photoName: photoPreview || photoName
     });
 
-    setSubmitSuccessMsg(`Complaint ticket CH1025 has been submitted successfully.`);
+    setSubmitSuccessMsg(`Complaint ticket has been submitted successfully.`);
     setTitle('');
     setDescription('');
     setPhotoName('');
+    setPhotoPreview('');
     setTimeout(() => {
       setSubmitSuccessMsg('');
       setActiveTab('my-complaints');
@@ -265,23 +282,72 @@ export default function StudentModule({
             </div>
 
             <div className="form-group">
-              <label>Upload Photo (Optional)</label>
-              <div className="photo-slot" style={{ minHeight: '90px', padding: '1rem', background: '#F8FAFC' }}>
-                {photoName ? (
-                  <div className="file-badge">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    {photoName}
+              <label>Evidence Photo (Camera Snap / Upload)</label>
+              <div className="photo-slot" style={{ minHeight: '90px', padding: '1rem', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '6px' }}>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  style={{ display: 'none' }}
+                />
+                <input
+                  type="file"
+                  ref={cameraInputRef}
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhotoSelect}
+                  style={{ display: 'none' }}
+                />
+
+                {photoPreview ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <img
+                      src={photoPreview}
+                      alt="Captured Evidence Preview"
+                      style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '2px solid #10B981', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
+                    />
+                    <div style={{ flex: 1, minWidth: '160px' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0F172A' }}>{photoName || 'Captured Photo'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '2px', fontWeight: 500 }}>Ready to attach to maintenance ticket</div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-action"
+                      style={{ color: '#DC2626', borderColor: '#FCA5A5', padding: '4px 10px', fontSize: '0.78rem' }}
+                      onClick={() => { setPhotoName(''); setPhotoPreview(''); }}
+                    >
+                      Remove
+                    </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn-action"
-                    onClick={() => setPhotoName('evidence_tap_leak.jpg')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Choose / Upload Photo
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn-action"
+                      onClick={() => cameraInputRef.current?.click()}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      Take Live Photo (Camera)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-action"
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      Browse Image File
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -530,10 +596,20 @@ export default function StudentModule({
               </div>
 
               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', marginBottom: '4px' }}>Uploaded Photo:</div>
-              <div className="file-badge" style={{ marginBottom: '1rem' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                {selectedTicket.beforePhoto || 'evidence_photo.jpg'}
-              </div>
+              {selectedTicket.beforePhoto && selectedTicket.beforePhoto.startsWith('data:image') ? (
+                <div style={{ marginBottom: '1rem' }}>
+                  <img
+                    src={selectedTicket.beforePhoto}
+                    alt="Complaint Evidence"
+                    style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #CBD5E1', display: 'block' }}
+                  />
+                </div>
+              ) : (
+                <div className="file-badge" style={{ marginBottom: '1rem' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  {selectedTicket.beforePhoto || 'evidence_photo.jpg'}
+                </div>
+              )}
             </div>
 
             {/* Clean Status Timeline */}

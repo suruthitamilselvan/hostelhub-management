@@ -184,12 +184,25 @@ export default function App() {
   };
 
   const handleSendMessage = (text) => {
+    const sender = activeRole === 'technician' ? 'technician' : 'student';
     const newMsg = {
       id: Date.now(),
-      sender: activeRole === 'technician' ? 'technician' : 'student',
+      sender,
       text
     };
     setChatMessages(prev => [...prev, newMsg]);
+
+    // Simulated automated conversational reply
+    setTimeout(() => {
+      const replyMsg = {
+        id: Date.now() + 1,
+        sender: sender === 'student' ? 'technician' : 'student',
+        text: sender === 'student'
+          ? 'Noted! On my way to your room with replacement parts now.'
+          : 'Thanks for the quick turnaround! The fixture is ready for inspection.'
+      };
+      setChatMessages(prev => [...prev, replyMsg]);
+    }, 1200);
   };
 
   const handleRateComplaint = async (ticketId, rating) => {
@@ -374,6 +387,7 @@ export default function App() {
         isOpen={isVerifyModalOpen}
         onClose={() => setIsVerifyModalOpen(false)}
         onVerifySuccess={handleVerifySuccess}
+        currentUser={currentUser}
       />
 
       {/* Real-time Live Chat Drawer */}
@@ -383,6 +397,7 @@ export default function App() {
         activeTicket={activeChatTicket}
         chatMessages={chatMessages}
         onSendMessage={handleSendMessage}
+        activeRole={activeRole}
       />
     </div>
   );
