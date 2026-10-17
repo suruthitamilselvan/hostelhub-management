@@ -33,9 +33,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setTimeout(() => {
       setIsSubmitting(false);
       onLoginSuccess({
+        id: loginRole === 'student' ? 1 : loginRole === 'warden' ? 2 : 3,
         role: loginRole,
         email,
-        name: loginRole === 'student' ? 'Suruthi T. (21CS042)' : loginRole === 'warden' ? 'Dr. Lakshmi V. (Chief Warden)' : 'Anand Pillai (Plumbing)'
+        name: loginRole === 'student' ? 'Suruthi T.' : loginRole === 'warden' ? 'Dr. Lakshmi V.' : 'Anand Pillai'
       });
       onClose();
     }, 600);

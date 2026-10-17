@@ -27,6 +27,9 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String faceEmbedding;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String facePhoto;
+
     public User() {}
 
     public User(Long id, String name, String email, String password, Role role, String faceEmbedding) {
@@ -55,6 +58,9 @@ public class User {
 
     public String getFaceEmbedding() { return faceEmbedding; }
     public void setFaceEmbedding(String faceEmbedding) { this.faceEmbedding = faceEmbedding; }
+
+    public String getFacePhoto() { return facePhoto; }
+    public void setFacePhoto(String facePhoto) { this.facePhoto = facePhoto; }
 
     public enum Role {
         STUDENT,

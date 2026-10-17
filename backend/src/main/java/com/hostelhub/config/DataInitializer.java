@@ -28,7 +28,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (complaintRepository.count() > 0) {
+        if (studentRepository.count() > 0 || wardenRepository.count() > 0) {
             return; // Seed data already exists
         }
 

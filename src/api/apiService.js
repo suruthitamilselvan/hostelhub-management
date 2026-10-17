@@ -33,6 +33,13 @@ export const apiService = {
     body: JSON.stringify({ email, password })
   }),
 
+  registerFace: (userId, faceEmbedding, facePhoto) => fetchApi('/auth/register-face', {
+    method: 'POST',
+    body: JSON.stringify({ userId, faceEmbedding, facePhoto })
+  }),
+
+  getFaceStatus: (userId) => fetchApi(`/auth/face-status/${userId}`),
+
   verifyFace: (userId, incomingEmbedding, ipAddress) => fetchApi('/auth/verify-face', {
     method: 'POST',
     body: JSON.stringify({ userId, incomingEmbedding, ipAddress })

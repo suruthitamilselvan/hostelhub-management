@@ -16,7 +16,12 @@ export default function App() {
   const [isVerified, setIsVerified] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState({
+    id: 1,
+    name: 'Suruthi T.',
+    email: 'suruthi@hostel.edu',
+    role: 'student'
+  });
 
   // Global State Synchronized across all 3 Role Views & Spring Boot REST API
   const [metrics, setMetrics] = useState(initialMetrics);
