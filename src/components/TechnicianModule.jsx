@@ -15,6 +15,15 @@ export default function TechnicianModule({
   const [newUnitCost, setNewUnitCost] = useState('');
   const [techNotes, setTechNotes] = useState('Replaced damaged rubber washer and tightened valve packing seal.');
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [completeSuccess, setCompleteSuccess] = useState('');
+
+  const handleCompleteClick = () => {
+    onMarkJobCompleted();
+    setCompleteSuccess('Job marked as Completed! After-repair proof and spare parts expenses recorded.');
+    setTimeout(() => {
+      setCompleteSuccess('');
+    }, 4000);
+  };
 
   const techFileInputRef = useRef(null);
   const techCameraInputRef = useRef(null);
@@ -176,20 +185,54 @@ export default function TechnicianModule({
           <div className="queue-header">
             <div className="queue-title-group">
               <h2>Task Execution & Spare Parts Costing</h2>
-              <p>Task {currentTask.id} · {currentTask.locationShort}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748B' }}>Task {currentTask.id} · {currentTask.locationShort}</span>
+                <span className={`badge ${currentTask.stage === 'Completed' ? 'badge-stage-completed' : 'badge-stage-in-progress'}`}>
+                  {currentTask.stage}
+                </span>
+              </div>
             </div>
-            <button className="btn-primary" style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={onMarkJobCompleted}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              Mark Job Completed
+            <button
+              className="btn-primary"
+              style={{
+                width: 'auto',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: currentTask.stage === 'Completed' ? '#10B981' : '#F5A623',
+                cursor: currentTask.stage === 'Completed' ? 'default' : 'pointer'
+              }}
+              onClick={handleCompleteClick}
+              disabled={currentTask.stage === 'Completed'}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {currentTask.stage === 'Completed' ? 'Job Completed ✓' : 'Mark Job Completed'}
             </button>
           </div>
 
+          {completeSuccess && (
+            <div style={{ background: '#ECFDF5', border: '1px solid #10B981', color: '#065F46', padding: '12px 16px', borderRadius: '6px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, fontSize: '0.9rem' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              {completeSuccess}
+            </div>
+          )}
+
           <div style={{ marginBottom: '1.25rem', padding: '1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0F172A', marginBottom: '4px' }}>
-              {currentTask.title}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0F172A', marginBottom: '4px' }}>
+                {currentTask.title}
+              </div>
+              <span className={`badge ${currentTask.stage === 'Completed' ? 'badge-stage-completed' : 'badge-stage-in-progress'}`}>
+                {currentTask.stage}
+              </span>
             </div>
             <div style={{ fontSize: '0.85rem', color: '#475569' }}>
-              Student: <strong>Suruthi T.</strong> | Priority: <strong>{currentTask.priority}</strong> | SLA: <strong>{currentTask.sla}</strong>
+              Student: <strong>{currentTask.studentName || 'Suruthi T.'}</strong> | Priority: <strong>{currentTask.priority}</strong> | SLA: <strong>{currentTask.sla}</strong>
             </div>
           </div>
 

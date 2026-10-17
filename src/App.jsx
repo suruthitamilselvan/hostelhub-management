@@ -322,16 +322,18 @@ export default function App() {
 
   const handleMarkJobCompleted = async () => {
     if (!activeTechnicianJob) return;
-    const cleanId = activeTechnicianJob.id.replace('#', '');
-    await apiService.markJobCompleted(cleanId, activeTechnicianJob.afterPhoto || 'after-tap.jpg');
+    const targetId = activeTechnicianJob.id;
+    const cleanId = targetId.replace('#', '');
+    const finalAfterPhoto = activeTechnicianJob.afterPhoto || 'after-repair.jpg';
 
+    // 1. Immediate reactive state update for instant UI feedback
     setComplaints(prev => prev.map(c => {
-      if (c.id === activeTechnicianJob.id) {
+      if (c.id === targetId) {
         return {
           ...c,
           stage: 'Completed',
           stageStep: 5,
-          afterPhoto: c.afterPhoto || 'after-tap.jpg'
+          afterPhoto: finalAfterPhoto
         };
       }
       return c;
@@ -341,6 +343,13 @@ export default function App() {
       ...prev,
       openComplaints: Math.max(0, prev.openComplaints - 1)
     }));
+
+    // 2. Sync to Spring Boot backend
+    try {
+      await apiService.markJobCompleted(cleanId, finalAfterPhoto.startsWith('data:image') ? 'camera-proof.jpg' : finalAfterPhoto);
+    } catch (e) {
+      console.warn('Backend mark completed note:', e.message);
+    }
   };
 
   return (

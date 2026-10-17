@@ -44,7 +44,12 @@ public class Complaint {
     @JoinColumn(name = "assigned_technician_id")
     private Technician assignedTechnician;
 
+    @Lob
+    @Column(columnDefinition = "CLOB")
     private String beforePhotoUrl;
+
+    @Lob
+    @Column(columnDefinition = "CLOB")
     private String afterPhotoUrl;
 
     private String slaDeadlineText;
