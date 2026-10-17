@@ -79,23 +79,27 @@ export default function WardenModule({
     return 'badge-stage-assigned';
   };
 
+  const categoryLabels = ['Plumbing', 'Electrical', 'Internet', 'Carpentry', 'Housekeeping'];
+  const categoryCounts = categoryLabels.map(cat => complaints.filter(c => c.category === cat).length);
   const categoryChartData = {
-    labels: ['Plumbing', 'Electrical', 'Internet', 'Carpentry', 'Housekeeping'],
+    labels: categoryLabels,
     datasets: [
       {
         label: 'Number of Complaints',
-        data: [12, 18, 9, 6, 4],
+        data: categoryCounts,
         backgroundColor: ['#082B5C', '#DC2626', '#12D8C7', '#F5A623', '#627D98'],
         borderRadius: 6
       }
     ]
   };
 
+  const blockLabels = ['Block A', 'Block B', 'Block C', 'Block D'];
+  const blockCounts = blockLabels.map(blk => complaints.filter(c => (c.location && c.location.includes(blk)) || (c.locationShort && c.locationShort.includes(blk))).length);
   const blockChartData = {
-    labels: ['Block A', 'Block B', 'Block C', 'Block D'],
+    labels: blockLabels,
     datasets: [
       {
-        data: [14, 28, 10, 8],
+        data: blockCounts,
         backgroundColor: ['#082B5C', '#F5A623', '#12D8C7', '#627D98']
       }
     ]
@@ -134,7 +138,7 @@ export default function WardenModule({
           <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>TOTAL COMPLAINTS</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>{metrics.openComplaints + 12}</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>{complaints.length}</div>
             </div>
             <div style={{ width: '1px', height: '32px', background: '#E2E8F0' }}></div>
             <div style={{ textAlign: 'center', flex: 1 }}>
@@ -149,7 +153,7 @@ export default function WardenModule({
             <div style={{ width: '1px', height: '32px', background: '#E2E8F0' }}></div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>OVERDUE / SLA BREACHES</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#DC2626', marginTop: '2px' }}>{metrics.slaBreaches}</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#DC2626', marginTop: '2px' }}>{complaints.filter(c => c.slaBreached).length}</div>
             </div>
           </div>
 
@@ -257,7 +261,19 @@ export default function WardenModule({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedComplaints.map(item => (
+                  {paginatedComplaints.length === 0 ? (
+                    <tr>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                          No Complaints Registered Yet
+                        </div>
+                        <div style={{ fontSize: '0.85rem' }}>
+                          The complaint queue is clear. Once students log maintenance tickets, they will appear here in real-time.
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedComplaints.map(item => (
                     <tr key={item.id} className={item.slaBreached ? 'row-breached' : ''}>
                       <td style={{ fontWeight: 700, color: '#082B5C' }}>{item.id}</td>
                       <td style={{ fontSize: '0.85rem', fontWeight: 600 }}>{item.studentName || 'Suruthi T.'}</td>
@@ -289,7 +305,7 @@ export default function WardenModule({
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )))}
                 </tbody>
               </table>
             </div>

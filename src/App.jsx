@@ -140,6 +140,32 @@ export default function App() {
     }));
   };
 
+  const updateDuplicatesFromList = (list) => {
+    const groups = {};
+    list.forEach(c => {
+      const block = c.locationShort ? c.locationShort.split(' ')[0] + ' ' + (c.locationShort.split(' ')[1] || 'B') : (c.location ? c.location.split('·')[0].trim() : 'Block B');
+      const key = `${block}_${c.category}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+    const dupes = [];
+    let dupeId = 1;
+    Object.entries(groups).forEach(([key, items]) => {
+      if (items.length >= 2) {
+        const [block, category] = key.split('_');
+        dupes.push({
+          id: dupeId++,
+          block,
+          category,
+          ticketIds: items.map(i => i.id),
+          targetTicket: items[0].id
+        });
+      }
+    });
+    setDuplicateSuggestions(dupes);
+    setMetrics(prev => ({ ...prev, mergeSuggestions: dupes.length }));
+  };
+
   const handleSubmitNewComplaint = async (formData) => {
     const apiRes = await apiService.createComplaint({
       studentId: 1,
@@ -151,7 +177,7 @@ export default function App() {
       photoName: formData.photoName
     });
 
-    const newId = apiRes ? apiRes.id : `#CH${1031 + Math.floor(Math.random() * 8000)}`;
+    const newId = apiRes ? apiRes.id : `#CH${1001 + complaints.length}`;
     const isElectrical = formData.category === 'Electrical';
 
     const newTicket = {
@@ -174,8 +200,10 @@ export default function App() {
       totalCost: 0
     };
 
-    setComplaints(prev => [newTicket, ...prev]);
-    setMetrics(prev => ({ ...prev, openComplaints: prev.openComplaints + 1 }));
+    const updatedComplaints = [newTicket, ...complaints];
+    setComplaints(updatedComplaints);
+    setMetrics(prev => ({ ...prev, openComplaints: updatedComplaints.filter(c => c.stage !== 'Closed').length }));
+    updateDuplicatesFromList(updatedComplaints);
   };
 
   const handleOpenChat = (ticket) => {
@@ -235,9 +263,10 @@ export default function App() {
     }));
   };
 
-  const activeTechnicianJob = complaints.find(c => c.id === '#CH1025') || complaints[0];
+  const activeTechnicianJob = complaints.find(c => c.assignedTech === 'Anand Pillai' || (c.assignedTech && c.stage !== 'Closed')) || complaints.find(c => c.stage === 'In Progress' || c.stage === 'Assigned') || complaints[0] || null;
 
   const handleAddSparePart = async (partData) => {
+    if (!activeTechnicianJob) return;
     const cleanId = activeTechnicianJob.id.replace('#', '');
     await apiService.addSparePart(cleanId, partData);
 
@@ -265,6 +294,7 @@ export default function App() {
   };
 
   const handleDeleteSparePart = (partId) => {
+    if (!activeTechnicianJob) return;
     setComplaints(prev => prev.map(c => {
       if (c.id === activeTechnicianJob.id) {
         const updatedParts = (c.parts || []).filter(p => p.id !== partId);
@@ -281,6 +311,7 @@ export default function App() {
   };
 
   const handleUploadAfterPhoto = (photoName) => {
+    if (!activeTechnicianJob) return;
     setComplaints(prev => prev.map(c => {
       if (c.id === activeTechnicianJob.id) {
         return { ...c, afterPhoto: photoName };
@@ -290,6 +321,7 @@ export default function App() {
   };
 
   const handleMarkJobCompleted = async () => {
+    if (!activeTechnicianJob) return;
     const cleanId = activeTechnicianJob.id.replace('#', '');
     await apiService.markJobCompleted(cleanId, activeTechnicianJob.afterPhoto || 'after-tap.jpg');
 

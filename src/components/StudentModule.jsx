@@ -174,32 +174,47 @@ export default function StudentModule({
                   </tr>
                 </thead>
                 <tbody>
-                  {complaints.slice(0, 5).map(item => (
-                    <tr key={item.id}>
-                      <td style={{ fontWeight: 600, color: '#082B5C' }}>{item.id}</td>
-                      <td>
-                        <div style={{ fontWeight: 500, color: '#0F172A' }}>{item.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Category: {item.category}</div>
-                      </td>
-                      <td>{item.locationShort || item.location}</td>
-                      <td>
-                        <span style={{ fontWeight: 500, color: '#334155' }}>
-                          {item.priority}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: 500, color: '#334155' }}>
-                          {item.stage}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: '0.82rem', color: '#64748B' }}>12 Sep 2026</td>
-                      <td>
-                        <button className="btn-action" onClick={() => setSelectedTicket(item)}>
-                          View
-                        </button>
+                  {complaints.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                          No Complaints Logged Yet
+                        </div>
+                        <div style={{ fontSize: '0.85rem' }}>
+                          You have no active maintenance complaints. Click <strong>"Submit New Complaint"</strong> above to file a new repair request with live camera evidence.
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    complaints.slice(0, 5).map(item => (
+                      <tr key={item.id}>
+                        <td style={{ fontWeight: 600, color: '#082B5C' }}>{item.id}</td>
+                        <td>
+                          <div style={{ fontWeight: 500, color: '#0F172A' }}>{item.title}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Category: {item.category}</div>
+                        </td>
+                        <td>{item.locationShort || item.location}</td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#334155' }}>
+                            {item.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#334155' }}>
+                            {item.stage}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#64748B' }}>18 Oct 2026</span>
+                        </td>
+                        <td>
+                          <button className="btn-action" onClick={() => setSelectedTicket(item)}>
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

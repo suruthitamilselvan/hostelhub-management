@@ -44,35 +44,8 @@ export default function TechnicianModule({
     }
   };
 
-  const currentTask = activeTask || {
-    id: '#CH1025',
-    title: 'Wash basin tap leaking continuously',
-    locationShort: 'Block B Room 204',
-    category: 'Plumbing',
-    priority: 'Medium',
-    stage: 'In Progress',
-    sla: '5h to SLA',
-    beforePhoto: 'before-tap.jpg',
-    afterPhoto: null,
-    parts: [{ id: 1, name: 'Tap washer set', qty: 2, unitCost: 45, lineTotal: 90 }],
-    totalCost: 90
-  };
-
-  const tasksList = [
-    currentTask,
-    {
-      id: '#CH1029',
-      title: 'Shower head low pressure flow',
-      locationShort: 'Block C Room 108',
-      category: 'Plumbing',
-      priority: 'Low',
-      stage: 'Assigned',
-      sla: '18h to SLA',
-      beforePhoto: 'shower-head.jpg',
-      parts: [],
-      totalCost: 0
-    }
-  ];
+  const currentTask = activeTask || null;
+  const tasksList = currentTask ? [currentTask] : [];
 
   return (
     <div className="module-content">
@@ -93,22 +66,22 @@ export default function TechnicianModule({
           <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>ASSIGNED TASKS</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>2</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>{tasksList.length}</div>
             </div>
             <div style={{ width: '1px', height: '32px', background: '#E2E8F0' }}></div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>IN PROGRESS</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>1</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>{tasksList.filter(t => t.stage === 'In Progress').length}</div>
             </div>
             <div style={{ width: '1px', height: '32px', background: '#E2E8F0' }}></div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>COMPLETED THIS MONTH</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#059669', marginTop: '2px' }}>96</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#059669', marginTop: '2px' }}>{tasksList.filter(t => t.stage === 'Completed' || t.stage === 'Closed').length}</div>
             </div>
             <div style={{ width: '1px', height: '32px', background: '#E2E8F0' }}></div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>AVERAGE SERVICE RATING</div>
-              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>★ 4.4</div>
+              <div style={{ fontSize: '24px', fontWeight: 600, color: '#082B5C', marginTop: '2px' }}>★ 5.0</div>
             </div>
           </div>
 
@@ -129,35 +102,48 @@ export default function TechnicianModule({
                   </tr>
                 </thead>
                 <tbody>
-                  {tasksList.map(task => (
-                    <tr key={task.id}>
-                      <td style={{ fontWeight: 700, color: '#0284C7' }}>{task.id}</td>
-                      <td>
-                        <div style={{ fontWeight: 600, color: '#0F172A' }}>{task.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Category: {task.category}</div>
-                      </td>
-                      <td>{task.locationShort}</td>
-                      <td>
-                        <span style={{ fontWeight: 500, color: '#334155' }}>
-                          {task.priority}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: 500, color: '#334155' }}>
-                          {task.stage}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: 500, color: '#64748B' }}>{task.sla}</span>
-                      </td>
-                      <td>
-                        <button className="btn-action" onClick={() => setActiveTab('parts-cost')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                          Work Details
-                        </button>
+                  {tasksList.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                          No Maintenance Jobs Assigned
+                        </div>
+                        <div style={{ fontSize: '0.82rem' }}>
+                          New repair tickets dispatched by the Warden will appear here.
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    tasksList.map(task => (
+                      <tr key={task.id}>
+                        <td style={{ fontWeight: 700, color: '#0284C7' }}>{task.id}</td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>{task.title}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Category: {task.category}</div>
+                        </td>
+                        <td>{task.locationShort}</td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#334155' }}>
+                            {task.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#334155' }}>
+                            {task.stage}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#64748B' }}>{task.sla}</span>
+                        </td>
+                        <td>
+                          <button className="btn-action" onClick={() => setActiveTab('parts-cost')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Work Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -167,7 +153,26 @@ export default function TechnicianModule({
 
       {/* PARTS & COST / WORK PAGE TAB */}
       {(activeTab === 'parts-cost' || activeTab === 'update-status') && (
-        <div className="queue-card">
+        !currentTask ? (
+          <div className="queue-card">
+            <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#64748B' }}>
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="1.5" style={{ marginBottom: '14px' }}>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                No Active Repair Job Selected
+              </div>
+              <p style={{ fontSize: '0.88rem', maxWidth: '440px', margin: '0 auto 1.5rem', lineHeight: 1.5 }}>
+                When the Warden assigns a maintenance ticket to this workstation, you will be able to log spare parts, calculate total repair expenses, and snap live completion proof here.
+              </p>
+              <button className="btn-action" onClick={() => setActiveTab('my-tasks')}>
+                View Tasks Queue
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="queue-card">
           <div className="queue-header">
             <div className="queue-title-group">
               <h2>Task Execution & Spare Parts Costing</h2>
@@ -373,6 +378,7 @@ export default function TechnicianModule({
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* CHAT, PERFORMANCE, PROFILE TABS */}
