@@ -264,9 +264,9 @@ export default function StudentModule({
           {/* Welcome Banner */}
           <div className="erp-welcome-card">
             <div>
-              <h2 className="welcome-title">Welcome, Suruthi T.</h2>
+              <h2 className="welcome-title">Welcome, {currentUser?.name || 'Suruthi T.'}</h2>
               <div className="welcome-sub">
-                Register Number: <strong>21CS042</strong> | Hostel: <strong>Block B Residence</strong> | Room: <strong>204</strong>
+                Register Number: <strong>{currentUser?.regNo || '21CS042'}</strong> | Hostel: <strong>{currentUser?.block || 'Block B'} Residence</strong> | Room: <strong>{currentUser?.room || '204'}</strong>
               </div>
             </div>
             <button className="btn-primary" onClick={() => setActiveTab('new-complaint')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>

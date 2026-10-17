@@ -100,6 +100,7 @@ export default function App() {
 
   const handleLoginSuccess = (userObj) => {
     setCurrentUser(userObj);
+    setIsVerified(false);
     handleRoleSwitch(userObj.role);
   };
 
@@ -177,8 +178,11 @@ export default function App() {
       return;
     }
 
+    const activeStudentId = currentUser?.id || 1;
+    const activeStudentName = currentUser?.name || 'Suruthi T.';
+
     const apiRes = await apiService.createComplaint({
-      studentId: 1,
+      studentId: activeStudentId,
       category: formData.category,
       title: formData.title,
       description: formData.description,
@@ -201,7 +205,7 @@ export default function App() {
       stageStep: 1,
       sla: '24h to SLA',
       slaBreached: false,
-      studentName: 'Suruthi T.',
+      studentName: activeStudentName,
       assignedTech: null,
       beforePhoto: formData.photoName || 'evidence.jpg',
       afterPhoto: null,

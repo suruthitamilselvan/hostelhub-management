@@ -32,12 +32,27 @@ public class DataInitializer implements CommandLineRunner {
             return; // Seed data already exists
         }
 
-        // 1. Create Student
-        Student student = new Student(
+        // 1. Create Students
+        Student student1 = new Student(
                 "Suruthi T.", "suruthi@hostel.edu", "password123",
-                "[0.12,0.45,-0.23,0.88,0.14]", "21CS042", "Block B", "204"
+                null, "21CS042", "Block B", "204"
         );
-        student = studentRepository.save(student);
+        Student student2 = new Student(
+                "Sahana M.", "sahana@hostel.edu", "password123",
+                null, "21CS038", "Block B", "205"
+        );
+        Student student3 = new Student(
+                "Rithika S.", "rithika@hostel.edu", "password123",
+                null, "21CS045", "Block B", "206"
+        );
+        Student student4 = new Student(
+                "Pavana K.", "pavana@hostel.edu", "password123",
+                null, "21CS032", "Block A", "102"
+        );
+        studentRepository.save(student1);
+        studentRepository.save(student2);
+        studentRepository.save(student3);
+        studentRepository.save(student4);
 
         // 2. Create Warden
         Warden warden = new Warden("Dr. Lakshmi V.", "lakshmi@hostel.edu", "admin123", "Chief Warden", "Block B");

@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
+import { apiService } from '../api/apiService';
+
+const sampleStudents = [
+  { id: 1, name: 'Suruthi T.', email: 'suruthi@hostel.edu', regNo: '21CS042', block: 'Block B', room: '204' },
+  { id: 8, name: 'Sahana M.', email: 'sahana@hostel.edu', regNo: '21CS038', block: 'Block B', room: '205' },
+  { id: 9, name: 'Rithika S.', email: 'rithika@hostel.edu', regNo: '21CS045', block: 'Block B', room: '206' },
+  { id: 10, name: 'Pavana K.', email: 'pavana@hostel.edu', regNo: '21CS032', block: 'Block A', room: '102' }
+];
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loginRole, setLoginRole] = useState('student');
+  const [selectedStudentEmail, setSelectedStudentEmail] = useState('suruthi@hostel.edu');
   const [email, setEmail] = useState('suruthi@hostel.edu');
   const [password, setPassword] = useState('password123');
   const [captchaInput, setCaptchaInput] = useState('7B29X');
@@ -14,7 +23,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoginRole(role);
     setErrorMsg('');
     if (role === 'student') {
-      setEmail('suruthi@hostel.edu');
+      setEmail(selectedStudentEmail);
       setPassword('password123');
     } else if (role === 'warden') {
       setEmail('lakshmi@hostel.edu');
@@ -25,26 +34,62 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSelectStudent = (st) => {
+    setSelectedStudentEmail(st.email);
+    setEmail(st.email);
+    setPassword('password123');
+    setErrorMsg('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMsg('');
 
-    setTimeout(() => {
+    try {
+      const apiUser = await apiService.login(email, password);
+
+      if (loginRole === 'student') {
+        const studentMeta = sampleStudents.find(s => s.email.toLowerCase() === email.toLowerCase()) || sampleStudents[0];
+        onLoginSuccess({
+          id: apiUser?.id || studentMeta.id,
+          role: 'student',
+          email: apiUser?.email || email,
+          name: apiUser?.name || studentMeta.name,
+          regNo: studentMeta.regNo,
+          block: studentMeta.block,
+          room: studentMeta.room,
+          hasFaceEnrolled: apiUser?.hasFaceEnrolled || false
+        });
+      } else if (loginRole === 'warden') {
+        onLoginSuccess({
+          id: apiUser?.id || 2,
+          role: 'warden',
+          email: apiUser?.email || email,
+          name: apiUser?.name || 'Dr. Lakshmi V.',
+          hasFaceEnrolled: apiUser?.hasFaceEnrolled || false
+        });
+      } else {
+        onLoginSuccess({
+          id: apiUser?.id || 3,
+          role: 'technician',
+          email: apiUser?.email || email,
+          name: apiUser?.name || 'Anand Pillai',
+          hasFaceEnrolled: apiUser?.hasFaceEnrolled || false
+        });
+      }
+
       setIsSubmitting(false);
-      onLoginSuccess({
-        id: loginRole === 'student' ? 1 : loginRole === 'warden' ? 2 : 3,
-        role: loginRole,
-        email,
-        name: loginRole === 'student' ? 'Suruthi T.' : loginRole === 'warden' ? 'Dr. Lakshmi V.' : 'Anand Pillai'
-      });
       onClose();
-    }, 600);
+    } catch (err) {
+      setIsSubmitting(false);
+      setErrorMsg('Login failed. Please check credentials.');
+    }
   };
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-dialog" style={{ maxWidth: '460px' }}>
+      <div className="modal-dialog" style={{ maxWidth: '480px' }}>
         <div className="modal-header">
           <div>
             <h3 className="modal-title" style={{ fontSize: '1.25rem' }}>HostelHub ERP Login</h3>
@@ -91,6 +136,41 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           </button>
         </div>
 
+        {/* Student Quick Select Switcher */}
+        {loginRole === 'student' && (
+          <div style={{ marginBottom: '1.25rem', background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: '0.74rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.04em' }}>
+              Select Student Account:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+              {sampleStudents.map(st => {
+                const isSelected = email.toLowerCase() === st.email.toLowerCase();
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => handleSelectStudent(st)}
+                    style={{
+                      background: isSelected ? '#082B5C' : '#FFFFFF',
+                      color: isSelected ? '#FFFFFF' : '#1E293B',
+                      border: `1px solid ${isSelected ? '#082B5C' : '#CBD5E1'}`,
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>{st.name}</div>
+                    <div style={{ fontSize: '0.68rem', color: isSelected ? '#93C5FD' : '#64748B' }}>{st.email}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {errorMsg && (
             <div style={{ background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#DC2626', padding: '8px 12px', borderRadius: '6px', fontSize: '0.8rem', marginBottom: '1rem' }}>
@@ -99,7 +179,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           )}
 
           <div className="form-group">
-            <label>{loginRole === 'student' ? 'Student Email / Registration No.' : loginRole === 'warden' ? 'Warden Email ID' : 'Technician Employee ID / Email'}</label>
+            <label>{loginRole === 'student' ? 'Student Email' : loginRole === 'warden' ? 'Warden Email ID' : 'Technician Email ID'}</label>
             <input
               type="text"
               className="form-control"
