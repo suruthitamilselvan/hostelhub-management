@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import CameraCaptureModal from './CameraCaptureModal';
 
 export default function StudentModule({
   activeTab,
@@ -17,6 +18,7 @@ export default function StudentModule({
   const [description, setDescription] = useState('');
   const [photoName, setPhotoName] = useState('');
   const [photoPreview, setPhotoPreview] = useState('');
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
 
   const fileInputRef = useRef(null);
@@ -325,7 +327,7 @@ export default function StudentModule({
                     <button
                       type="button"
                       className="btn-action"
-                      onClick={() => cameraInputRef.current?.click()}
+                      onClick={() => setIsCameraModalOpen(true)}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -667,6 +669,17 @@ export default function StudentModule({
           </div>
         </div>
       )}
+
+      {/* Live Camera Capture Modal */}
+      <CameraCaptureModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onCapture={(dataUrl) => {
+          setPhotoPreview(dataUrl);
+          setPhotoName(`live_snap_${Date.now()}.jpg`);
+        }}
+        title="Take Live Complaint Photo"
+      />
     </div>
   );
 }

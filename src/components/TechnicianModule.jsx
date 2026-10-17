@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import CameraCaptureModal from './CameraCaptureModal';
 
 export default function TechnicianModule({
   activeTab,
@@ -13,6 +14,7 @@ export default function TechnicianModule({
   const [newQty, setNewQty] = useState(1);
   const [newUnitCost, setNewUnitCost] = useState('');
   const [techNotes, setTechNotes] = useState('Replaced damaged rubber washer and tightened valve packing seal.');
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
 
   const techFileInputRef = useRef(null);
   const techCameraInputRef = useRef(null);
@@ -238,7 +240,7 @@ export default function TechnicianModule({
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button type="button" className="btn-action" onClick={() => techCameraInputRef.current?.click()} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>
+                    <button type="button" className="btn-action" onClick={() => setIsCameraModalOpen(true)} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>
                       Retake Photo
                     </button>
                     <button type="button" className="btn-action" onClick={() => techFileInputRef.current?.click()} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>
@@ -251,7 +253,7 @@ export default function TechnicianModule({
                   <button
                     type="button"
                     className="btn-action"
-                    onClick={() => techCameraInputRef.current?.click()}
+                    onClick={() => setIsCameraModalOpen(true)}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFFFF' }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -385,6 +387,16 @@ export default function TechnicianModule({
           </div>
         </div>
       )}
+
+      {/* Live Camera Capture Modal for Technician Repair Evidence */}
+      <CameraCaptureModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onCapture={(dataUrl) => {
+          onUploadAfterPhoto(dataUrl);
+        }}
+        title="Capture After Repair Proof (Live Camera)"
+      />
     </div>
   );
 }
