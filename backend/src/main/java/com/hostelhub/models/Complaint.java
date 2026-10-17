@@ -45,11 +45,11 @@ public class Complaint {
     private Technician assignedTechnician;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "LONGTEXT")
     private String beforePhotoUrl;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "LONGTEXT")
     private String afterPhotoUrl;
 
     private String slaDeadlineText;
