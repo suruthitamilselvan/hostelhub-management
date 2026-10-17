@@ -172,6 +172,11 @@ export default function App() {
   };
 
   const handleSubmitNewComplaint = async (formData) => {
+    if (!isVerified) {
+      setIsVerifyModalOpen(true);
+      return;
+    }
+
     const apiRes = await apiService.createComplaint({
       studentId: 1,
       category: formData.category,
@@ -379,6 +384,7 @@ export default function App() {
           setActiveTab={setActiveTab}
           onLogout={handleLogout}
           currentUser={currentUser}
+          isVerified={isVerified}
         />
 
         <main className="erp-main-area">
@@ -391,6 +397,9 @@ export default function App() {
               onOpenChat={handleOpenChat}
               onRateComplaint={handleRateComplaint}
               onReopenComplaint={handleReopenComplaint}
+              isVerified={isVerified}
+              onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
+              currentUser={currentUser}
             />
           )}
 

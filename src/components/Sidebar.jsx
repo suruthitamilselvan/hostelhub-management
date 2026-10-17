@@ -104,13 +104,13 @@ const renderIcon = (type) => {
   }
 };
 
-export default function Sidebar({ activeRole, activeTab, setActiveTab, onLogout, currentUser }) {
+export default function Sidebar({ activeRole, activeTab, setActiveTab, onLogout, currentUser, isVerified }) {
   const getNavItems = () => {
     if (activeRole === 'student') {
       return [
-        { id: 'dashboard', label: 'Dashboard' },
-        { id: 'new-complaint', label: 'New Complaint' },
-        { id: 'my-complaints', label: 'My Complaints' },
+        { id: 'dashboard', label: isVerified ? 'Dashboard' : 'Portal Lock 🔒' },
+        { id: 'new-complaint', label: isVerified ? 'New Complaint' : 'New Complaint 🔒' },
+        { id: 'my-complaints', label: isVerified ? 'My Complaints' : 'My Complaints 🔒' },
         { id: 'chat', label: 'Chat' },
         { id: 'notifications', label: 'Notifications' },
         { id: 'profile', label: 'Profile' },
@@ -158,6 +158,12 @@ export default function Sidebar({ activeRole, activeTab, setActiveTab, onLogout,
         <div style={{ fontSize: '19px', fontWeight: 400, color: '#FFFFFF', marginTop: '3px', lineHeight: 1.2 }}>
           {getRoleTitle()}
         </div>
+        {activeRole === 'student' && (
+          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: isVerified ? '#10B981' : '#F5A623', fontWeight: 600 }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isVerified ? '#10B981' : '#F5A623', display: 'inline-block' }}></span>
+            {isVerified ? 'Biometrics Verified ✓' : 'Face Scan Required'}
+          </div>
+        )}
       </div>
 
       <nav className="sidebar-nav">

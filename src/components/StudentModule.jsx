@@ -8,7 +8,10 @@ export default function StudentModule({
   onSubmitNewComplaint,
   onOpenChat,
   onRateComplaint,
-  onReopenComplaint
+  onReopenComplaint,
+  isVerified,
+  onOpenVerifyModal,
+  currentUser
 }) {
   // New Complaint Form State
   const [category, setCategory] = useState('Plumbing');
@@ -54,6 +57,10 @@ export default function StudentModule({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    if (!isVerified) {
+      if (onOpenVerifyModal) onOpenVerifyModal();
+      return;
+    }
     if (!description && !title) return;
 
     const generatedTitle = title || `${category} issue in ${block} Room ${room}`;
@@ -110,8 +117,147 @@ export default function StudentModule({
   const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage) || 1;
   const paginatedComplaints = filteredComplaints.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  if (!isVerified) {
+    return (
+      <div className="module-content">
+        <div style={{
+          background: '#FFFFFF',
+          borderRadius: '12px',
+          border: '1px solid #E2E8F0',
+          padding: '3rem 2rem',
+          maxWidth: '640px',
+          margin: '2rem auto',
+          textAlign: 'center',
+          boxShadow: '0 10px 25px -5px rgba(8, 43, 92, 0.08)'
+        }}>
+          {/* Padlock Icon */}
+          <div style={{
+            width: '84px',
+            height: '84px',
+            borderRadius: '50%',
+            background: '#FEF2F2',
+            border: '2px solid #FCA5A5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem',
+            color: '#DC2626'
+          }}>
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+
+          <span style={{
+            background: '#FEE2E2',
+            color: '#DC2626',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            padding: '4px 14px',
+            borderRadius: '9999px',
+            display: 'inline-block',
+            marginBottom: '1rem'
+          }}>
+            Security Access Control: Portal Locked 🔒
+          </span>
+
+          <h2 style={{ fontSize: '1.55rem', fontWeight: 700, color: '#082B5C', marginBottom: '0.75rem' }}>
+            Biometric Face Verification Required
+          </h2>
+
+          <p style={{ fontSize: '0.92rem', color: '#64748B', lineHeight: 1.6, maxWidth: '520px', margin: '0 auto 1.75rem' }}>
+            To safeguard student privacy and prevent proxy complaints, hostel security policy requires you to complete 
+            <strong> live face biometric verification</strong> before accessing your student dashboard or lodging room maintenance tickets.
+          </p>
+
+          {/* Student Info Card */}
+          <div style={{
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '8px',
+            padding: '1rem 1.25rem',
+            marginBottom: '2rem',
+            display: 'flex',
+            justifyContent: 'space-around',
+            textAlign: 'left'
+          }}>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Resident</div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#082B5C' }}>{currentUser?.name || 'Suruthi T.'}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Hostel & Room</div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>Block B · Room 204</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Wi-Fi Network</div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#059669' }}>192.168.1.42 (Campus Wi-Fi)</div>
+            </div>
+          </div>
+
+          {/* Unlock Button */}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={onOpenVerifyModal}
+            style={{
+              background: '#082B5C',
+              padding: '14px 32px',
+              fontSize: '1rem',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              boxShadow: '0 4px 14px rgba(8, 43, 92, 0.3)',
+              cursor: 'pointer'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Scan Face to Unlock Student Portal
+          </button>
+
+          <div style={{ marginTop: '1.25rem', fontSize: '0.78rem', color: '#94A3B8' }}>
+            Haven't registered your face yet? Click above to register and save your biometric profile in MySQL.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="module-content">
+      {/* Biometric Session Verified Banner */}
+      <div style={{
+        background: '#ECFDF5',
+        border: '1px solid #A7F3D0',
+        borderRadius: '6px',
+        padding: '10px 16px',
+        marginBottom: '1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: '0.85rem',
+        color: '#065F46'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <div>
+            <strong>Biometric Identity Verified:</strong> Authenticated as {currentUser?.name || 'Suruthi T.'} (21CS042). Full portal access & complaint lodging enabled.
+          </div>
+        </div>
+        <span style={{ fontSize: '0.72rem', background: '#D1FAE5', color: '#047857', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+          SESSION SECURE ✓
+        </span>
+      </div>
+
       {/* 1. STUDENT DASHBOARD */}
       {activeTab === 'dashboard' && (
         <div>

@@ -33,6 +33,10 @@ public class ComplaintService {
         Student student = studentRepository.findById(req.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + req.getStudentId()));
 
+        if (student.getFaceEmbedding() == null || student.getFaceEmbedding().isBlank()) {
+            throw new IllegalStateException("Biometric face authentication is required before submitting complaints. Please register your face first.");
+        }
+
         // Use Factory Pattern to construct complaint
         Complaint complaint = complaintFactory.createComplaint(
                 student, req.getCategory(), req.getTitle(), req.getDescription(),
