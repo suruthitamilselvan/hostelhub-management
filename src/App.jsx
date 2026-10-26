@@ -6,22 +6,54 @@ import WardenModule from './components/WardenModule';
 import TechnicianModule from './components/TechnicianModule';
 import FaceVerificationModal from './components/FaceVerificationModal';
 import LoginModal from './components/LoginModal';
+import AccessDeniedModal from './components/AccessDeniedModal';
 import ChatDrawer from './components/ChatDrawer';
 import { apiService } from './api/apiService';
 import { initialMetrics, initialComplaints, initialDuplicateSuggestions, initialTechnicians, initialChatMessages } from './data/initialData';
 
 export default function App() {
-  const [activeRole, setActiveRole] = useState('warden');
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hostelhub_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      id: 1,
+      name: 'Suruthi T.',
+      email: 'suruthi@hostel.edu',
+      role: 'student'
+    };
+  });
+
+  const [activeRole, setActiveRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hostelhub_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.role) return parsed.role;
+      }
+    } catch (e) {}
+    return 'student';
+  });
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isVerified, setIsVerified] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    name: 'Suruthi T.',
-    email: 'suruthi@hostel.edu',
-    role: 'student'
+  const [loginInitialRole, setLoginInitialRole] = useState('student');
+  const [accessDeniedModal, setAccessDeniedModal] = useState({
+    isOpen: false,
+    targetRole: 'warden'
   });
+
+  // Persist user session to localStorage
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('hostelhub_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('hostelhub_user');
+    }
+  }, [currentUser]);
 
   // Global State Synchronized across all 3 Role Views & Spring Boot REST API
   const [metrics, setMetrics] = useState(initialMetrics);
@@ -32,8 +64,15 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeChatTicket, setActiveChatTicket] = useState(null);
 
-  // Handle Role Switching and reset tab to dashboard
+  // Handle Role Switching with Strict RBAC Role Guard
   const handleRoleSwitch = (newRole) => {
+    if (currentUser && currentUser.role !== newRole) {
+      setAccessDeniedModal({
+        isOpen: true,
+        targetRole: newRole
+      });
+      return;
+    }
     setActiveRole(newRole);
     setActiveTab('dashboard');
   };
@@ -101,16 +140,17 @@ export default function App() {
   const handleLoginSuccess = (userObj) => {
     setCurrentUser(userObj);
     setIsVerified(false);
-    handleRoleSwitch(userObj.role);
+    setActiveRole(userObj.role);
+    setActiveTab('dashboard');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setLoginInitialRole(activeRole);
     setIsLoginModalOpen(true);
   };
 
-  const handleVerifySuccess = async () => {
-    await apiService.verifyFace(1, "[0.1248, -0.4512, 0.8819, 0.0412, ...]", "192.168.1.42");
+  const handleVerifySuccess = () => {
     setIsVerified(true);
     setIsVerifyModalOpen(false);
   };
@@ -434,11 +474,24 @@ export default function App() {
         </main>
       </div>
 
+      {/* Access Denied Modal for Strict Role Guard */}
+      <AccessDeniedModal
+        isOpen={accessDeniedModal.isOpen}
+        onClose={() => setAccessDeniedModal(prev => ({ ...prev, isOpen: false }))}
+        targetRole={accessDeniedModal.targetRole}
+        currentUser={currentUser}
+        onSwitchAccount={(targetRole) => {
+          setLoginInitialRole(targetRole);
+          setIsLoginModalOpen(true);
+        }}
+      />
+
       {/* Single Sign-On Access Modal */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+        initialRole={loginInitialRole}
       />
 
       {/* Face Biometric Verification Modal */}

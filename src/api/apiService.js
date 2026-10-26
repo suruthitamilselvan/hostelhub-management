@@ -40,6 +40,8 @@ export const apiService = {
 
   getFaceStatus: (userId) => fetchApi(`/auth/face-status/${userId}`),
 
+  getAllProfiles: () => fetchApi('/auth/all-profiles'),
+
   resetFace: (userId) => fetchApi(`/auth/reset-face/${userId}`, {
     method: 'POST'
   }),

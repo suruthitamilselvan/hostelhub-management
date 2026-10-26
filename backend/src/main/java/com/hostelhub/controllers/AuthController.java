@@ -7,10 +7,13 @@ import com.hostelhub.models.User;
 import com.hostelhub.repositories.UserRepository;
 import com.hostelhub.services.FaceVerificationService;
 import com.hostelhub.services.GeofenceService;
+import com.hostelhub.models.Student;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,6 +48,28 @@ public class AuthController {
             return ResponseEntity.ok(resp);
         }
         return ResponseEntity.status(401).body(Map.of("message", "Invalid email or password"));
+    }
+
+    @GetMapping("/all-profiles")
+    public ResponseEntity<?> getAllProfiles() {
+        List<User> users = userRepository.findAll();
+        List<Map<String, Object>> profileList = new ArrayList<>();
+        for (User u : users) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", u.getId());
+            map.put("name", u.getName());
+            map.put("email", u.getEmail());
+            map.put("role", u.getRole() != null ? u.getRole().name().toLowerCase() : "student");
+            map.put("hasFaceEnrolled", u.getFaceEmbedding() != null && !u.getFaceEmbedding().isBlank());
+            map.put("facePhoto", u.getFacePhoto());
+            if (u instanceof Student s) {
+                map.put("registerNumber", s.getRegisterNumber());
+                map.put("hostelBlock", s.getHostelBlock());
+                map.put("roomNumber", s.getRoomNumber());
+            }
+            profileList.add(map);
+        }
+        return ResponseEntity.ok(profileList);
     }
 
     @PostMapping("/register-face")

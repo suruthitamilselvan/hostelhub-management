@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../api/apiService';
 
 const sampleStudents = [
@@ -8,14 +8,20 @@ const sampleStudents = [
   { id: 10, name: 'Pavana K.', email: 'pavana@hostel.edu', regNo: '21CS032', block: 'Block A', room: '102' }
 ];
 
-export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
-  const [loginRole, setLoginRole] = useState('student');
+export default function LoginModal({ isOpen, onClose, onLoginSuccess, initialRole = 'student' }) {
+  const [loginRole, setLoginRole] = useState(initialRole || 'student');
   const [selectedStudentEmail, setSelectedStudentEmail] = useState('suruthi@hostel.edu');
   const [email, setEmail] = useState('suruthi@hostel.edu');
   const [password, setPassword] = useState('password123');
   const [captchaInput, setCaptchaInput] = useState('7B29X');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && initialRole) {
+      handleRoleChange(initialRole);
+    }
+  }, [isOpen, initialRole]);
 
   if (!isOpen) return null;
 

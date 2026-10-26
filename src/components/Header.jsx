@@ -10,12 +10,14 @@ export default function Header({
 }) {
   const handleSelectRole = (role) => {
     setActiveRole(role);
-    setTimeout(() => {
-      const workspaceEl = document.getElementById('live-workspace');
-      if (workspaceEl) {
-        workspaceEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 50);
+    if (currentUser && currentUser.role === role) {
+      setTimeout(() => {
+        const workspaceEl = document.getElementById('live-workspace');
+        if (workspaceEl) {
+          workspaceEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    }
   };
 
   return (
@@ -37,14 +39,29 @@ export default function Header({
         </div>
 
         <ul className="genius-nav-menu">
-          <li className={`genius-nav-item ${activeRole === 'student' ? 'active-link' : ''}`} onClick={() => handleSelectRole('student')}>
+          <li
+            className={`genius-nav-item ${activeRole === 'student' ? 'active-link' : ''}`}
+            onClick={() => handleSelectRole('student')}
+            title={currentUser?.role !== 'student' ? 'Access Restricted to Students' : 'Student Portal'}
+          >
             STUDENT PORTAL
+            {currentUser?.role !== 'student' && <span style={{ fontSize: '11px', marginLeft: '5px', opacity: 0.8 }}>🔒</span>}
           </li>
-          <li className={`genius-nav-item ${activeRole === 'warden' ? 'active-link' : ''}`} onClick={() => handleSelectRole('warden')}>
+          <li
+            className={`genius-nav-item ${activeRole === 'warden' ? 'active-link' : ''}`}
+            onClick={() => handleSelectRole('warden')}
+            title={currentUser?.role !== 'warden' ? 'Access Restricted to Wardens' : 'Warden Dashboard'}
+          >
             WARDEN DASHBOARD
+            {currentUser?.role !== 'warden' && <span style={{ fontSize: '11px', marginLeft: '5px', opacity: 0.8 }}>🔒</span>}
           </li>
-          <li className={`genius-nav-item ${activeRole === 'technician' ? 'active-link' : ''}`} onClick={() => handleSelectRole('technician')}>
+          <li
+            className={`genius-nav-item ${activeRole === 'technician' ? 'active-link' : ''}`}
+            onClick={() => handleSelectRole('technician')}
+            title={currentUser?.role !== 'technician' ? 'Access Restricted to Technicians' : 'Technician Workstation'}
+          >
             TECHNICIAN WORKSTATION
+            {currentUser?.role !== 'technician' && <span style={{ fontSize: '11px', marginLeft: '5px', opacity: 0.8 }}>🔒</span>}
           </li>
           <li className="genius-nav-item" onClick={() => alert('SLA Resolution Policy Standard Active')}>
             SLA MATRIX
@@ -121,13 +138,13 @@ export default function Header({
 
             <div className="genius-hero-btn-row">
               <button className="btn-hero-white-pill" onClick={() => handleSelectRole('student')}>
-                Student Portal
+                Student Portal {currentUser?.role !== 'student' && '🔒'}
               </button>
               <button className="btn-hero-orange-pill" onClick={() => handleSelectRole('warden')}>
-                Warden Console
+                Warden Console {currentUser?.role !== 'warden' && '🔒'}
               </button>
               <button className="btn-hero-white-pill" onClick={() => handleSelectRole('technician')}>
-                Technician Hub
+                Technician Hub {currentUser?.role !== 'technician' && '🔒'}
               </button>
             </div>
           </div>
@@ -337,9 +354,11 @@ export default function Header({
               gap: '6px'
             }}
             onClick={() => handleSelectRole('student')}
+            title={currentUser?.role !== 'student' ? 'Access Restricted to Students' : 'Student Portal'}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Student Portal
+            {currentUser?.role !== 'student' && <span style={{ fontSize: '11px', opacity: 0.8 }}>🔒</span>}
           </button>
           <button
             className={`role-tab-btn ${activeRole === 'warden' ? 'active' : ''}`}
@@ -357,9 +376,11 @@ export default function Header({
               gap: '6px'
             }}
             onClick={() => handleSelectRole('warden')}
+            title={currentUser?.role !== 'warden' ? 'Access Restricted to Wardens' : 'Warden Dashboard'}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Warden Dashboard
+            {currentUser?.role !== 'warden' && <span style={{ fontSize: '11px', opacity: 0.8 }}>🔒</span>}
           </button>
           <button
             className={`role-tab-btn ${activeRole === 'technician' ? 'active' : ''}`}
@@ -377,9 +398,11 @@ export default function Header({
               gap: '6px'
             }}
             onClick={() => handleSelectRole('technician')}
+            title={currentUser?.role !== 'technician' ? 'Access Restricted to Technicians' : 'Technician Workstation'}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
             Technician Workstation
+            {currentUser?.role !== 'technician' && <span style={{ fontSize: '11px', opacity: 0.8 }}>🔒</span>}
           </button>
         </div>
 
