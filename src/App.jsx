@@ -457,6 +457,8 @@ export default function App() {
               onMergeDuplicate={handleMergeDuplicate}
               onAssignTechnician={handleAssignTechnician}
               technicians={technicians}
+              currentUser={currentUser}
+              onOpenChat={handleOpenChat}
             />
           )}
 
@@ -469,6 +471,9 @@ export default function App() {
               onDeleteSparePart={handleDeleteSparePart}
               onUploadAfterPhoto={handleUploadAfterPhoto}
               onMarkJobCompleted={handleMarkJobCompleted}
+              currentUser={currentUser}
+              onOpenChat={handleOpenChat}
+              complaints={complaints}
             />
           )}
         </main>

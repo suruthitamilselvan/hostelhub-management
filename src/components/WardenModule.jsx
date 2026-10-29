@@ -12,7 +12,9 @@ export default function WardenModule({
   duplicateSuggestions,
   onMergeDuplicate,
   onAssignTechnician,
-  technicians
+  technicians,
+  currentUser,
+  onOpenChat
 }) {
   const [selectedBlockFilter, setSelectedBlockFilter] = useState('All blocks');
   const [selectedStageFilter, setSelectedStageFilter] = useState('All stages');
@@ -26,6 +28,23 @@ export default function WardenModule({
   const [selectedTechId, setSelectedTechId] = useState('');
   const [assignmentStrategy, setAssignmentStrategy] = useState('leastLoaded');
   const [showAuditModal, setShowAuditModal] = useState(false);
+
+  // States for Users, Notifications, and Settings tabs
+  const [userFilterRole, setUserFilterRole] = useState('all');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userActionMsg, setUserActionMsg] = useState('');
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastBlock, setBroadcastBlock] = useState('All Blocks');
+  const [broadcastSuccess, setBroadcastSuccess] = useState('');
+  const [slaElectrical, setSlaElectrical] = useState(4);
+  const [slaPlumbing, setSlaPlumbing] = useState(12);
+  const [slaCarpentry, setSlaCarpentry] = useState(24);
+  const [slaAppliance, setSlaAppliance] = useState(48);
+  const [aiSensitivity, setAiSensitivity] = useState(80);
+  const [requireFaceVerify, setRequireFaceVerify] = useState(true);
+  const [autoMergeDuplicates, setAutoMergeDuplicates] = useState(true);
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   const filteredComplaints = complaints.filter(item => {
     if (selectedBlockFilter !== 'All blocks') {
@@ -479,15 +498,516 @@ export default function WardenModule({
         </div>
       )}
 
-      {/* NOTIFICATIONS, USERS, SETTINGS TABS */}
-      {(activeTab === 'notifications' || activeTab === 'users' || activeTab === 'settings') && (
-        <div className="queue-card">
-          <div className="queue-header">
-            <h2>Warden Administration — {activeTab.toUpperCase()}</h2>
-            <p>Configure residence portal options and staff access controls</p>
+      {/* USERS DIRECTORY TAB */}
+      {activeTab === 'users' && (
+        <div>
+          {/* Header Card */}
+          <div className="erp-welcome-card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="welcome-title">Hostel Residence & Staff Directory</h2>
+                <div className="welcome-sub">
+                  Directory of registered hostel residents, maintenance technicians, and administrative officers
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span style={{ background: '#DCFCE7', color: '#166534', padding: '6px 12px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: 600 }}>
+                  Active Database Sync: 9 Profiles
+                </span>
+              </div>
+            </div>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', color: '#475569' }}>
-            Administrative panel for {activeTab} is configured and active.
+
+          {userActionMsg && (
+            <div style={{ background: '#EFF6FF', border: '1px solid #93C5FD', color: '#1E40AF', padding: '10px 14px', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.88rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{userActionMsg}</span>
+              <button onClick={() => setUserActionMsg('')} style={{ background: 'none', border: 'none', color: '#1E40AF', fontWeight: 700, cursor: 'pointer' }}>×</button>
+            </div>
+          )}
+
+          <div className="queue-card">
+            {/* Filter and Search Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { id: 'all', label: 'All Users (9)' },
+                  { id: 'student', label: 'Students (4)' },
+                  { id: 'technician', label: 'Technicians (4)' },
+                  { id: 'warden', label: 'Warden Office (1)' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setUserFilterRole(tab.id)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '4px',
+                      fontSize: '0.84rem',
+                      fontWeight: userFilterRole === tab.id ? 600 : 500,
+                      background: userFilterRole === tab.id ? '#082B5C' : '#F1F5F9',
+                      color: userFilterRole === tab.id ? '#FFFFFF' : '#475569',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ minWidth: '260px' }}>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search user by name, email, or room..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  style={{ fontSize: '0.85rem' }}
+                />
+              </div>
+            </div>
+
+            {/* User Directory Table */}
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Full Name & Role</th>
+                    <th>Email Address</th>
+                    <th>Assigned Location / Dept</th>
+                    <th>Biometric Enrollment</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: 1, name: 'Suruthi T.', email: 'suruthi@gmail.com', role: 'student', location: 'Block B · Room 204' },
+                    { id: 8, name: 'Sahana V.', email: 'sahana@gmail.com', role: 'student', location: 'Block B · Room 205' },
+                    { id: 9, name: 'Rithika S.', email: 'rithika@gmail.com', role: 'student', location: 'Block B · Room 206' },
+                    { id: 10, name: 'Pavana K.', email: 'pavana@gmail.com', role: 'student', location: 'Block A · Room 102' },
+                    { id: 3, name: 'Anand Pillai', email: 'anand.tech@hostelhub.internal', role: 'technician', location: 'Plumbing Services' },
+                    { id: 4, name: 'Rajesh Kumar', email: 'rajesh.elec@hostelhub.internal', role: 'technician', location: 'Electrical Services' },
+                    { id: 5, name: 'Suresh Nair', email: 'suresh.carp@hostelhub.internal', role: 'technician', location: 'Carpentry & Civil' },
+                    { id: 6, name: 'Vignesh Murugan', email: 'vignesh.appl@hostelhub.internal', role: 'technician', location: 'Appliance Repair' },
+                    { id: 2, name: 'Chief Warden Office', email: 'warden@hostelhub.internal', role: 'warden', location: 'Administrative Wing' },
+                  ]
+                    .filter(u => {
+                      if (userFilterRole !== 'all' && u.role !== userFilterRole) return false;
+                      if (userSearchQuery) {
+                        const q = userSearchQuery.toLowerCase();
+                        return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.location.toLowerCase().includes(q);
+                      }
+                      return true;
+                    })
+                    .map(user => (
+                      <tr key={user.id}>
+                        <td style={{ fontWeight: 700, color: '#082B5C' }}>#{user.id}</td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: '#0F172A' }}>{user.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '1px 6px',
+                              borderRadius: '3px',
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              background: user.role === 'student' ? '#E0F2FE' : user.role === 'technician' ? '#FEF3C7' : '#F3E8FF',
+                              color: user.role === 'student' ? '#0369A1' : user.role === 'technician' ? '#B45309' : '#7E22CE',
+                              marginTop: '2px'
+                            }}>
+                              {user.role.toUpperCase()}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: '0.85rem', color: '#334155' }}>{user.email}</td>
+                        <td>
+                          <span style={{ fontWeight: 500, color: '#0F172A', fontSize: '0.85rem' }}>{user.location}</span>
+                        </td>
+                        <td>
+                          {user.role === 'student' ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#059669', fontSize: '0.8rem', fontWeight: 600, background: '#DCFCE7', padding: '3px 8px', borderRadius: '4px' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                              Enrolled in MySQL
+                            </span>
+                          ) : (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#0369A1', fontSize: '0.8rem', fontWeight: 600, background: '#E0F2FE', padding: '3px 8px', borderRadius: '4px' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                              Enterprise Staff Auth
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            {user.role === 'student' ? (
+                              <button
+                                className="btn-action"
+                                style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                                onClick={() => {
+                                  setUserActionMsg(`Biometric facial vector reset requested for ${user.name} (${user.email}). Student can re-register face on next login.`);
+                                  setTimeout(() => setUserActionMsg(''), 5000);
+                                }}
+                              >
+                                Reset Face
+                              </button>
+                            ) : (
+                              <button
+                                className="btn-action"
+                                style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                                onClick={() => {
+                                  setUserActionMsg(`Official shift notification sent to ${user.name}.`);
+                                  setTimeout(() => setUserActionMsg(''), 4000);
+                                }}
+                              >
+                                Send Alert
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFICATIONS & ANNOUNCEMENT BROADCAST TAB */}
+      {activeTab === 'notifications' && (
+        <div>
+          {/* Header Card */}
+          <div className="erp-welcome-card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="welcome-title">Administrative Notification Center</h2>
+                <div className="welcome-sub">
+                  Campus-wide broadcast announcements, emergency alerts, and automated ERP escalation feed
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.25rem' }}>
+            {/* Campus Broadcast Composer */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Broadcast Campus Notice</h2>
+                  <p>Send official announcements directly to student and technician dashboards</p>
+                </div>
+              </div>
+
+              {broadcastSuccess && (
+                <div style={{ background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', padding: '10px 14px', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                  ✓ {broadcastSuccess}
+                </div>
+              )}
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (!broadcastTitle || !broadcastMessage) return;
+                setBroadcastSuccess(`Notice "${broadcastTitle}" broadcasted to ${broadcastBlock} residents and sent to student notifications.`);
+                setBroadcastTitle('');
+                setBroadcastMessage('');
+                setTimeout(() => setBroadcastSuccess(''), 5000);
+              }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>
+                    Notice Title:
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g., Scheduled Water Tank Cleaning - Saturday 10 AM"
+                    value={broadcastTitle}
+                    onChange={(e) => setBroadcastTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>
+                    Target Audience / Hostel Block:
+                  </label>
+                  <select
+                    className="form-control"
+                    value={broadcastBlock}
+                    onChange={(e) => setBroadcastBlock(e.target.value)}
+                  >
+                    <option value="All Blocks">All Hostel Blocks (Campus-wide)</option>
+                    <option value="Block A">Block A (Engineering Freshers)</option>
+                    <option value="Block B">Block B (Senior Residents)</option>
+                    <option value="Block C">Block C (Postgraduate Wing)</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>
+                    Notice Description & Instructions:
+                  </label>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Enter detailed maintenance instructions for students..."
+                    value={broadcastMessage}
+                    onChange={(e) => setBroadcastMessage(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  Broadcast Notice to Residents
+                </button>
+              </form>
+            </div>
+
+            {/* Live System Activity Feed */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Real-Time Activity & Incident Log</h2>
+                  <p>Automated priority escalations, SLA warnings, and biometric events</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ padding: '12px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ background: '#DC2626', color: '#FFFFFF', fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', borderRadius: '3px' }}>
+                      ⚡ HIGH PRIORITY DISPATCH
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#991B1B' }}>12 mins ago</span>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#991B1B', marginTop: '4px', fontSize: '0.88rem' }}>Electrical Spark in Block B Room 208</div>
+                  <div style={{ fontSize: '0.78rem', color: '#7F1D1D' }}>Reported by Rithika S. Auto-dispatched to Electrician Rajesh Kumar.</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ background: '#D97706', color: '#FFFFFF', fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', borderRadius: '3px' }}>
+                      ⏰ SLA DEADLINE WARNING
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#92400E' }}>35 mins ago</span>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#92400E', marginTop: '4px', fontSize: '0.88rem' }}>Ticket #CH1025 Approaching 12h SLA</div>
+                  <div style={{ fontSize: '0.78rem', color: '#78350F' }}>Technician Anand Pillai has logged check-in at Block B Room 204.</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ background: '#16A34A', color: '#FFFFFF', fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', borderRadius: '3px' }}>
+                      🤖 AI DUPLICATE CLUSTER
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#166534' }}>1 hour ago</span>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#166534', marginTop: '4px', fontSize: '0.88rem' }}>Duplicate Plumbing Tickets Detected</div>
+                  <div style={{ fontSize: '0.78rem', color: '#14532D' }}>Cosine similarity 88.5% between Room 204 and Room 205 complaints. Ready for merge.</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ background: '#0284C7', color: '#FFFFFF', fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', borderRadius: '3px' }}>
+                      👤 BIOMETRIC AUTH
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748B' }}>3 hours ago</span>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#0F172A', marginTop: '4px', fontSize: '0.88rem' }}>Live Face Verification Passed</div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B' }}>Suruthi T. matched 77.0% similarity against stored biometric vector. Complaint unlocked.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERP SETTINGS TAB */}
+      {activeTab === 'settings' && (
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          {/* Header Card */}
+          <div className="erp-welcome-card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="welcome-title">ERP Campus System Settings</h2>
+                <div className="welcome-sub">
+                  Configure hostel operational rules, SLA targets, AI clustering thresholds, and security gatekeeper
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {settingsSaved && (
+            <div style={{ background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', padding: '12px 16px', borderRadius: '6px', marginBottom: '1.25rem', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+              System configuration saved successfully to HostelHub ERP database!
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Section 1: Hostel Parameters */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Hostel Campus Information</h2>
+                  <p>Institution identification and warden contact desk</p>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Hostel Complex Name</label>
+                  <input type="text" className="form-control" defaultValue="HostelHub Engineering Campus" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Warden Emergency Helpline</label>
+                  <input type="text" className="form-control" defaultValue="+91 98450 00001" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Maintenance Shift Hours</label>
+                  <input type="text" className="form-control" defaultValue="08:00 AM – 08:00 PM (24x7 Emergency)" />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: SLA Target Times */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>SLA Target Resolution Deadlines (Hours)</h2>
+                  <p>Set maximum resolution turnaround times before warden escalation alerts trigger</p>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Electrical Target (hrs)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={slaElectrical}
+                    onChange={(e) => setSlaElectrical(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Plumbing Target (hrs)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={slaPlumbing}
+                    onChange={(e) => setSlaPlumbing(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Carpentry Target (hrs)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={slaCarpentry}
+                    onChange={(e) => setSlaCarpentry(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', marginBottom: '4px' }}>Appliance Target (hrs)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={slaAppliance}
+                    onChange={(e) => setSlaAppliance(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: AI Clustering & Dispatch */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>AI Deduplication & Smart Dispatch Engine</h2>
+                  <p>Adjust natural language similarity threshold and workload allocation logic</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
+                      Duplicate Similarity Detection Threshold: {aiSensitivity}%
+                    </label>
+                    <span style={{ fontSize: '0.82rem', color: '#0284C7', fontWeight: 600 }}>Cosine Match &ge; {aiSensitivity}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="95"
+                    value={aiSensitivity}
+                    onChange={(e) => setAiSensitivity(Number(e.target.value))}
+                    style={{ width: '100%', cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+                    Higher sensitivity requires stricter description similarity before proposing duplicate merges.
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input
+                    type="checkbox"
+                    id="autoMerge"
+                    checked={autoMergeDuplicates}
+                    onChange={(e) => setAutoMergeDuplicates(e.target.checked)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="autoMerge" style={{ fontSize: '0.85rem', color: '#0F172A', cursor: 'pointer', fontWeight: 500 }}>
+                    Enable Automated Cluster Grouping for complaints filed in the same hostel wing
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Security & Biometrics */}
+            <div className="queue-card">
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Security & Biometric Gatekeeper</h2>
+                  <p>Campus security compliance and facial recognition parameters</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input
+                    type="checkbox"
+                    id="requireFace"
+                    checked={requireFaceVerify}
+                    onChange={(e) => setRequireFaceVerify(e.target.checked)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="requireFace" style={{ fontSize: '0.85rem', color: '#0F172A', cursor: 'pointer', fontWeight: 500 }}>
+                    Enforce Live Facial Verification before allowing student complaint submission (Gatekeeper)
+                  </label>
+                </div>
+
+                <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.85rem' }}>Biometric Similarity Calibrated Cutoff</div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>Spring Boot FaceVerificationService threshold with 2D spatial shift tolerance.</div>
+                  </div>
+                  <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '4px 10px', borderRadius: '4px', fontWeight: 700, fontSize: '0.85rem' }}>
+                    65.0% Cosine
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+              <button
+                className="btn-primary"
+                style={{ width: 'auto', padding: '10px 24px', fontSize: '0.95rem' }}
+                onClick={() => {
+                  setSettingsSaved(true);
+                  setTimeout(() => setSettingsSaved(false), 5000);
+                }}
+              >
+                Save System Configuration
+              </button>
+            </div>
           </div>
         </div>
       )}

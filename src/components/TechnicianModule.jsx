@@ -8,7 +8,10 @@ export default function TechnicianModule({
   onAddSparePart,
   onDeleteSparePart,
   onUploadAfterPhoto,
-  onMarkJobCompleted
+  onMarkJobCompleted,
+  currentUser,
+  onOpenChat,
+  complaints = []
 }) {
   const [newPartName, setNewPartName] = useState('');
   const [newQty, setNewQty] = useState(1);
@@ -424,15 +427,338 @@ export default function TechnicianModule({
         )
       )}
 
-      {/* CHAT, PERFORMANCE, PROFILE TABS */}
-      {(activeTab === 'chat' || activeTab === 'performance' || activeTab === 'profile') && (
+      {/* PERFORMANCE TAB */}
+      {activeTab === 'performance' && (
+        <div>
+          {/* Header Card */}
+          <div className="erp-welcome-card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="welcome-title">Technician Performance Analytics</h2>
+                <div className="welcome-sub">
+                  Technician: <strong>Anand Pillai</strong> (#TECH-003) | Department: <strong>Plumbing Services</strong>
+                </div>
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#FEF3C7', border: '1px solid #F59E0B', color: '#92400E', padding: '6px 14px', borderRadius: '20px', fontWeight: 600, fontSize: '0.85rem' }}>
+                <span>🏆 Gold Tier Certified</span>
+                <span>·</span>
+                <span>99.4% SLA Score</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 KPI Scorecards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '1.25rem', borderLeft: '4px solid #10B981' }}>
+              <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Jobs Completed</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0F172A', marginTop: '4px' }}>24</div>
+              <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '4px', fontWeight: 500 }}>+6 finished this month (100% on-time)</div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '1.25rem', borderLeft: '4px solid #0284C7' }}>
+              <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Avg SLA Resolution</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0F172A', marginTop: '4px' }}>4.2 hrs</div>
+              <div style={{ fontSize: '0.75rem', color: '#0284C7', marginTop: '4px', fontWeight: 500 }}>Target: 24.0 hrs (82.5% faster)</div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '1.25rem', borderLeft: '4px solid #F59E0B' }}>
+              <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Resident Rating</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0F172A', marginTop: '4px' }}>★ 4.9 <span style={{ fontSize: '1rem', color: '#64748B', fontWeight: 400 }}>/ 5.0</span></div>
+              <div style={{ fontSize: '0.75rem', color: '#D97706', marginTop: '4px', fontWeight: 500 }}>Based on 24 student reviews</div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '1.25rem', borderLeft: '4px solid #8B5CF6' }}>
+              <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>First-Time Fix Rate</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0F172A', marginTop: '4px' }}>96.0%</div>
+              <div style={{ fontSize: '0.75rem', color: '#7C3AED', marginTop: '4px', fontWeight: 500 }}>0 re-opened complaints in 30 days</div>
+            </div>
+          </div>
+
+          {/* Category Breakdown & Badges Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
+            <div className="queue-card" style={{ marginBottom: 0 }}>
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Category Resolution Efficiency</h2>
+                  <p>Performance breakdown across maintenance task categories</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px', fontWeight: 500 }}>
+                    <span style={{ color: '#0F172A' }}>Plumbing & Pipe Leakages (14 jobs)</span>
+                    <span style={{ color: '#059669', fontWeight: 600 }}>98% SLA Met</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '98%', height: '100%', background: '#10B981', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px', fontWeight: 500 }}>
+                    <span style={{ color: '#0F172A' }}>Flush Valves & Restroom Fixtures (6 jobs)</span>
+                    <span style={{ color: '#059669', fontWeight: 600 }}>100% SLA Met</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '100%', background: '#10B981', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px', fontWeight: 500 }}>
+                    <span style={{ color: '#0F172A' }}>Drainage & Blockage Clearances (4 jobs)</span>
+                    <span style={{ color: '#0284C7', fontWeight: 600 }}>92% SLA Met</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '92%', height: '100%', background: '#0284C7', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="queue-card" style={{ marginBottom: 0 }}>
+              <div className="queue-header">
+                <div className="queue-title-group">
+                  <h2>Quality & Compliance Accreditations</h2>
+                  <p>Certified operational badges awarded this term</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '1.5rem' }}>⚡</div>
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.88rem' }}>Rapid Dispatch Responder</div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>Average response to warden assignment under 15 minutes.</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '1.5rem' }}>📸</div>
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.88rem' }}>Photo Evidence Certified</div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>100% of completed repairs have timestamped after-repair proof.</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '1.5rem' }}>🛡️</div>
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.88rem' }}>Zero Escalations</div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>No unresolved complaints escalated to hostel director level.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Completed Jobs & Student Reviews Table */}
+          <div className="queue-card">
+            <div className="queue-header">
+              <div className="queue-title-group">
+                <h2>Recent Completed Jobs & Student Feedback</h2>
+                <p>Resolution log with resident ratings and review notes</p>
+              </div>
+            </div>
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Ticket ID</th>
+                    <th>Issue & Resident</th>
+                    <th>Location</th>
+                    <th>Resolution Time</th>
+                    <th>Rating</th>
+                    <th>Resident Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 700, color: '#0284C7' }}>#CH1025</td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0F172A' }}>Water Tap Leakage</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Suruthi T. (21CS042)</div>
+                    </td>
+                    <td>Block B · Room 204</td>
+                    <td style={{ fontWeight: 600, color: '#059669' }}>2.5 hrs</td>
+                    <td style={{ color: '#F59E0B', fontWeight: 600 }}>★★★★★ (5.0)</td>
+                    <td style={{ fontSize: '0.85rem', color: '#475569' }}>"Fixed within 2 hours, tap washer replaced and working smoothly!"</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700, color: '#0284C7' }}>#CH1022</td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0F172A' }}>Flush Valve Jammed</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Sahana V. (21CS043)</div>
+                    </td>
+                    <td>Block B · Room 205</td>
+                    <td style={{ fontWeight: 600, color: '#059669' }}>3.1 hrs</td>
+                    <td style={{ color: '#F59E0B', fontWeight: 600 }}>★★★★★ (5.0)</td>
+                    <td style={{ fontSize: '0.85rem', color: '#475569' }}>"Very polite technician, brought spare valve packing and fixed fast."</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700, color: '#0284C7' }}>#CH1019</td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0F172A' }}>Washbasin Clog</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Rithika S. (21CS044)</div>
+                    </td>
+                    <td>Block B · Room 206</td>
+                    <td style={{ fontWeight: 600, color: '#059669' }}>4.0 hrs</td>
+                    <td style={{ color: '#F59E0B', fontWeight: 600 }}>★★★★☆ (4.5)</td>
+                    <td style={{ fontSize: '0.85rem', color: '#475569' }}>"Blockage cleared efficiently. Cleaned up after work was completed."</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700, color: '#0284C7' }}>#CH1014</td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0F172A' }}>Shower Flow Low Pressure</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Pavana K. (21CS045)</div>
+                    </td>
+                    <td>Block A · Room 102</td>
+                    <td style={{ fontWeight: 600, color: '#059669' }}>5.5 hrs</td>
+                    <td style={{ color: '#F59E0B', fontWeight: 600 }}>★★★★★ (5.0)</td>
+                    <td style={{ fontSize: '0.85rem', color: '#475569' }}>"Cleaned shower head nozzles. Water pressure back to normal. Great job!"</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CHAT TAB */}
+      {activeTab === 'chat' && (
         <div className="queue-card">
           <div className="queue-header">
-            <h2>Technician Module — {activeTab.toUpperCase()}</h2>
-            <p>Workstation module view for active repairs</p>
+            <div className="queue-title-group">
+              <h2>Technician Resident Communication Hub</h2>
+              <p>Direct live messaging channel with hostel residents for scheduled repairs and updates</p>
+            </div>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', color: '#475569' }}>
-            Technician {activeTab} view is active.
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+            {/* Active Task Chat Action */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1.5rem', textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#EFF6FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h3 style={{ fontSize: '1.1rem', color: '#0F172A', marginBottom: '6px' }}>
+                Active Task Chat: {currentTask ? `#${currentTask.id}` : '#CH1025'}
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1.25rem' }}>
+                Resident: <strong>{currentTask?.studentName || 'Suruthi T.'}</strong> · {currentTask?.locationShort || 'Block B · Room 204'}
+                <br />
+                Issue: {currentTask?.title || 'Water Tap Leakage in Restroom'}
+              </p>
+              <button
+                className="btn-primary"
+                style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px', margin: '0 auto' }}
+                onClick={() => onOpenChat && onOpenChat(currentTask || complaints[0] || { id: 'CH1025', title: 'Water Tap Leakage', studentName: 'Suruthi T.' })}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Open Live Resident Chat Drawer
+              </button>
+            </div>
+
+            {/* Recent Conversations List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>Recent Resident Conversations</div>
+              
+              <div
+                style={{ padding: '12px 14px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => onOpenChat && onOpenChat(currentTask || complaints[0])}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.9rem' }}>Suruthi T.</span>
+                    <span style={{ fontSize: '0.72rem', background: '#DBEAFE', color: '#1E40AF', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>Active Ticket #CH1025</span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '3px' }}>"I am in Room 204, you can come by now."</div>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600 }}>Online</span>
+              </div>
+
+              <div
+                style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.9rem' }}>Sahana V.</span>
+                    <span style={{ fontSize: '0.72rem', background: '#DCFCE7', color: '#166534', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>Resolved #CH1022</span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '3px' }}>"Thank you for replacing the valve so quickly!"</div>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Yesterday</span>
+              </div>
+
+              <div
+                style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.9rem' }}>Rithika S.</span>
+                    <span style={{ fontSize: '0.72rem', background: '#DCFCE7', color: '#166534', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>Resolved #CH1019</span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '3px' }}>"Drain line is working cleanly now. Rating 5 stars!"</div>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>24 Oct</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PROFILE TAB */}
+      {activeTab === 'profile' && (
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="queue-card">
+            <div className="queue-header">
+              <div className="queue-title-group">
+                <h2>Technician Workstation Profile</h2>
+                <p>Staff credentials, assigned zone, biometric authorization, and duty roster</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', background: '#F8FAFC', padding: '1.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#082B5C', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 700 }}>
+                  AP
+                </div>
+                <div style={{ position: 'absolute', bottom: '2px', right: '2px', width: '18px', height: '18px', background: '#10B981', border: '2px solid #FFFFFF', borderRadius: '50%' }}></div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Anand Pillai</h3>
+                  <span style={{ background: '#DCFCE7', color: '#166534', fontSize: '0.75rem', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>ON DUTY · ACTIVE</span>
+                </div>
+                <div style={{ fontSize: '0.88rem', color: '#0284C7', fontWeight: 600, marginTop: '2px' }}>Senior Plumbing Maintenance Technician</div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Employee ID: <strong>#TECH-PLUM-03</strong> · Joined: August 2023</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', background: '#FFFFFF', padding: '1rem', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Duty Shift</div>
+                <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.92rem', marginTop: '2px' }}>Morning Shift (08:00 AM – 04:30 PM)</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Assigned Zone</div>
+                <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.92rem', marginTop: '2px' }}>Blocks A, B, and C (Hostels)</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Contact Number</div>
+                <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.92rem', marginTop: '2px' }}>+91 98450 12345</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Campus Email</div>
+                <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.92rem', marginTop: '2px' }}>anand.tech@hostelhub.internal</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Professional Certification</div>
+                <div style={{ fontWeight: 600, color: '#059669', fontSize: '0.92rem', marginTop: '2px' }}>National Plumbing Council Grade 1 (NPC-G1)</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Biometric Verification</div>
+                <div style={{ fontWeight: 600, color: '#082B5C', fontSize: '0.92rem', marginTop: '2px' }}>✓ Enrolled in Enterprise Staff Database</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
