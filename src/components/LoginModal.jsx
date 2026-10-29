@@ -3,7 +3,7 @@ import { apiService } from '../api/apiService';
 
 const sampleStudents = [
   { id: 1, name: 'Suruthi T.', email: 'suruthi@hostel.edu', regNo: '21CS042', block: 'Block B', room: '204' },
-  { id: 8, name: 'Sahana M.', email: 'sahana@hostel.edu', regNo: '21CS038', block: 'Block B', room: '205' },
+  { id: 8, name: 'Sahana V.', email: 'sahana@hostel.edu', regNo: '21CS038', block: 'Block B', room: '205' },
   { id: 9, name: 'Rithika S.', email: 'rithika@hostel.edu', regNo: '21CS045', block: 'Block B', room: '206' },
   { id: 10, name: 'Pavana K.', email: 'pavana@hostel.edu', regNo: '21CS032', block: 'Block A', room: '102' }
 ];

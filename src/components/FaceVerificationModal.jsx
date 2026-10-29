@@ -3,7 +3,7 @@ import { apiService } from '../api/apiService';
 
 const defaultStudentRoster = [
   { id: 1, name: 'Suruthi T.', email: 'suruthi@hostel.edu', hostelBlock: 'Block B', roomNumber: '204', hasFaceEnrolled: false, facePhoto: null },
-  { id: 8, name: 'Sahana M.', email: 'sahana@hostel.edu', hostelBlock: 'Block B', roomNumber: '205', hasFaceEnrolled: false, facePhoto: null },
+  { id: 8, name: 'Sahana V.', email: 'sahana@hostel.edu', hostelBlock: 'Block B', roomNumber: '205', hasFaceEnrolled: false, facePhoto: null },
   { id: 9, name: 'Rithika S.', email: 'rithika@hostel.edu', hostelBlock: 'Block B', roomNumber: '206', hasFaceEnrolled: false, facePhoto: null },
   { id: 10, name: 'Pavana K.', email: 'pavana@hostel.edu', hostelBlock: 'Block A', roomNumber: '102', hasFaceEnrolled: false, facePhoto: null }
 ];

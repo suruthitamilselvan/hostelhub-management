@@ -38,7 +38,7 @@ public class DataInitializer implements CommandLineRunner {
                 null, "21CS042", "Block B", "204"
         );
         Student student2 = new Student(
-                "Sahana M.", "sahana@hostel.edu", "password123",
+                "Sahana V.", "sahana@hostel.edu", "password123",
                 null, "21CS038", "Block B", "205"
         );
         Student student3 = new Student(
