@@ -142,13 +142,13 @@ export default function FaceVerificationModal({ isOpen, onClose, onVerifySuccess
     setCameraActive(false);
   };
 
-  // Extract 128D mean-centered visual contrast & edge energy vector
+  // Extract 128D invariant face vector using adaptive skin localization & histogram equalization
   const extractFaceFeatures = () => {
     if (cameraActive && videoRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
       const video = videoRef.current;
-      const width = video.videoWidth || 320;
-      const height = video.videoHeight || 240;
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -157,74 +157,125 @@ export default function FaceVerificationModal({ isOpen, onClose, onVerifySuccess
       // Snapshot photo as base64 JPEG
       const snapshotUrl = canvas.toDataURL('image/jpeg', 0.65);
 
-      // Crop face oval area (center 50% width, 60% height)
-      const startX = Math.floor(width * 0.25);
-      const startY = Math.floor(height * 0.20);
-      const cropW = Math.max(32, Math.floor(width * 0.50));
-      const cropH = Math.max(32, Math.floor(height * 0.60));
+      // 1. Scan central region for skin-tone pixels to adaptively find face centroid & scale
+      const fullImg = ctx.getImageData(0, 0, width, height);
+      const raw = fullImg.data;
+      const xCoords = [];
+      const yCoords = [];
 
-      const imgData = ctx.getImageData(startX, startY, cropW, cropH);
-      const data = imgData.data;
+      const minY = Math.floor(height * 0.08);
+      const maxY = Math.floor(height * 0.92);
+      const minX = Math.floor(width * 0.12);
+      const maxX = Math.floor(width * 0.88);
 
-      // 1. Calculate overall mean luminance M of the cropped face area
-      let sumAllLum = 0;
-      let totalPixels = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sumAllLum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        totalPixels++;
-      }
-      const meanLum = totalPixels > 0 ? (sumAllLum / totalPixels) : 128;
+      for (let y = minY; y < maxY; y += 4) {
+        for (let x = minX; x < maxX; x += 4) {
+          const idx = (y * width + x) * 4;
+          const r = raw[idx];
+          const g = raw[idx + 1];
+          const b = raw[idx + 2];
 
-      // 2. Divide face into an 8 x 8 grid (64 spatial patches)
-      const gridCols = 8;
-      const gridRows = 8;
-      const patchW = Math.max(2, Math.floor(cropW / gridCols));
-      const patchH = Math.max(2, Math.floor(cropH / gridRows));
-
-      const contrastVector = [];
-      const edgeVector = [];
-
-      for (let r = 0; r < gridRows; r++) {
-        for (let c = 0; c < gridCols; c++) {
-          let patchLum = 0;
-          let patchEdges = 0;
-          let count = 0;
-          const patchY = r * patchH;
-          const patchX = c * patchW;
-
-          for (let py = 0; py < patchH; py += 2) {
-            for (let px = 0; px < patchW; px += 2) {
-              const curX = patchX + px;
-              const curY = patchY + py;
-              const idx = (curY * cropW + curX) * 4;
-
-              if (idx + 6 < data.length) {
-                const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                patchLum += lum;
-
-                // Horizontal gradient
-                const nextLumX = 0.299 * data[idx + 4] + 0.587 * data[idx + 5] + 0.114 * data[idx + 6];
-                patchEdges += Math.abs(nextLumX - lum);
-                count++;
-              }
-            }
+          // Generalized skin-tone detection
+          if (r > 60 && g > 40 && b > 20 && (r - g) > 8 && (r - b) > 8 && Math.max(r, g, b) - Math.min(r, g, b) > 12) {
+            xCoords.push(x);
+            yCoords.push(y);
           }
-
-          const avgLum = count > 0 ? (patchLum / count) : meanLum;
-          const avgEdge = count > 0 ? (patchEdges / count) : 0;
-
-          // Zero-center contrast relative to overall face mean
-          contrastVector.push((avgLum - meanLum) / 128.0);
-          // High-frequency edge density centered
-          edgeVector.push((avgEdge - 15.0) / 30.0);
         }
       }
 
-      // Combine 64 contrast + 64 edge density = 128 dimensions
-      const raw128 = [...contrastVector, ...edgeVector];
+      let cropX, cropY, cropSize;
+      if (xCoords.length > 50) {
+        xCoords.sort((a, b) => a - b);
+        yCoords.sort((a, b) => a - b);
+        const p15X = xCoords[Math.floor(xCoords.length * 0.15)];
+        const p85X = xCoords[Math.floor(xCoords.length * 0.85)];
+        const p15Y = yCoords[Math.floor(yCoords.length * 0.15)];
+        const p85Y = yCoords[Math.floor(yCoords.length * 0.85)];
 
-      // L2 unit normalize so sum of squares = 1.0
-      const norm = Math.sqrt(raw128.reduce((acc, val) => acc + val * val, 0)) || 1.0;
+        const cx = (p15X + p85X) / 2;
+        const cy = (p15Y + p85Y) / 2;
+        const bw = p85X - p15X;
+        const bh = p85Y - p15Y;
+
+        cropSize = Math.max(bw, bh) * 1.35;
+        cropX = Math.max(0, Math.min(width - cropSize, cx - cropSize * 0.5));
+        cropY = Math.max(0, Math.min(height - cropSize, cy - cropSize * 0.55));
+      } else {
+        // Fallback to center guide oval
+        cropSize = Math.min(width * 0.55, height * 0.65);
+        cropX = Math.max(0, (width - cropSize) / 2);
+        cropY = Math.max(0, (height - cropSize) / 2 * 0.85);
+      }
+
+      // 2. Render canonical 64x64 face crop on an offscreen canvas
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = 64;
+      faceCanvas.height = 64;
+      const faceCtx = faceCanvas.getContext('2d');
+      faceCtx.drawImage(canvas, cropX, cropY, cropSize, cropSize, 0, 0, 64, 64);
+      const faceData = faceCtx.getImageData(0, 0, 64, 64);
+      const fd = faceData.data;
+
+      // 3. Compute 8-bit grayscale & luminance histogram
+      const gray = new Uint8Array(64 * 64);
+      const hist = new Int32Array(256);
+      for (let i = 0, j = 0; i < fd.length; i += 4, j++) {
+        const lum = Math.round(0.299 * fd[i] + 0.587 * fd[i + 1] + 0.114 * fd[i + 2]);
+        gray[j] = lum;
+        hist[lum]++;
+      }
+
+      // 4. Histogram Equalization (removes illumination/lighting variance)
+      const cdf = new Int32Array(256);
+      let acc = 0;
+      let minCdf = 0;
+      for (let i = 0; i < 256; i++) {
+        acc += hist[i];
+        cdf[i] = acc;
+        if (minCdf === 0 && acc > 0) minCdf = acc;
+      }
+      const totalPixels = 64 * 64;
+      const equalized = new Float32Array(64 * 64);
+      let sumEq = 0;
+      for (let i = 0; i < totalPixels; i++) {
+        const g = gray[i];
+        const eqVal = Math.round(((cdf[g] - minCdf) / (totalPixels - minCdf)) * 255);
+        equalized[i] = eqVal;
+        sumEq += eqVal;
+      }
+      const meanEq = sumEq / totalPixels;
+
+      // 5. Extract 64-patch normalized contrast + 64-patch edge energy = 128D
+      const grid = 8;
+      const pw = 8;
+      const contrast = [];
+      const edges = [];
+
+      for (let r = 0; r < grid; r++) {
+        for (let c = 0; c < grid; c++) {
+          let patchSum = 0;
+          let edgeSum = 0;
+          let count = 0;
+
+          for (let y = r * pw; y < (r + 1) * pw; y++) {
+            for (let x = c * pw; x < (c + 1) * pw; x++) {
+              const idx = y * 64 + x;
+              const v = equalized[idx];
+              patchSum += v;
+              if (x < (c + 1) * pw - 1) {
+                edgeSum += Math.abs(equalized[idx + 1] - v);
+              }
+              count++;
+            }
+          }
+          contrast.push((patchSum / count - meanEq) / 128.0);
+          edges.push(edgeSum / 32.0);
+        }
+      }
+
+      // 6. Combine & L2 unit normalize
+      const raw128 = [...contrast, ...edges];
+      const norm = Math.sqrt(raw128.reduce((sum, v) => sum + v * v, 0)) || 1.0;
       const normalized = raw128.map(v => parseFloat((v / norm).toFixed(4)));
 
       return { vector: normalized, snapshotUrl };
@@ -315,7 +366,7 @@ export default function FaceVerificationModal({ isOpen, onClose, onVerifySuccess
         const score = res && res.embeddingScore ? res.embeddingScore : 0.0;
         setSimilarityScore((score * 100).toFixed(1));
 
-        // Case 2: Face matches registered profile (cosine match >= 75%)
+        // Case 2: Face matches registered profile (cosine match >= 65%)
         if (res.overallVerified === true || res.faceVerified === true) {
           setVerifiedSuccess(true);
           setVerificationFailed(false);
@@ -331,7 +382,7 @@ export default function FaceVerificationModal({ isOpen, onClose, onVerifySuccess
           // Case 3: Face DOES NOT match registered profile
           setVerifiedSuccess(false);
           setVerificationFailed(true);
-          setStatusMsg(`❌ Face Not Recognized! Cosine Match: ${(score * 100).toFixed(1)}% (Threshold: 75%). This face does not match ${selectedResident?.name}'s registered profile.`);
+          setStatusMsg(`❌ Face Not Recognized! Cosine Match: ${(score * 100).toFixed(1)}% (Threshold: 65%). This face does not match ${selectedResident?.name}'s registered profile.`);
         }
       } catch (err) {
         setProcessing(false);
@@ -652,7 +703,7 @@ export default function FaceVerificationModal({ isOpen, onClose, onVerifySuccess
           <div style={{ fontWeight: 600, color: verifiedSuccess || registeredSuccess ? '#065F46' : verificationFailed ? '#991B1B' : '#0F172A', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' }}>
             <span>Status:</span>
             {similarityScore && (
-              <span style={{ color: parseFloat(similarityScore) >= 75 ? '#059669' : '#DC2626', fontWeight: 700 }}>
+              <span style={{ color: parseFloat(similarityScore) >= 65 ? '#059669' : '#DC2626', fontWeight: 700 }}>
                 Cosine Similarity: {similarityScore}%
               </span>
             )}
