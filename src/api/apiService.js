@@ -1,6 +1,9 @@
-// API Service for connecting React Frontend to Spring Boot REST Endpoints (http://localhost:8080/api or cloud endpoint)
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// API Service for connecting React Frontend to Spring Boot REST Endpoints
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://hostelhub-backend-y4vf.onrender.com/api'
+    : 'http://localhost:8080/api'
+);
 
 /**
  * Generic fetch wrapper with fallback handling
